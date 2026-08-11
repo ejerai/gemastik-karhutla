@@ -250,31 +250,6 @@
   .chart-box.tall{height:320px;}
   .chart-box.short{height:190px;}
 
-  /* Samakan tinggi visual pasangan kartu grid-2 di section Proyeksi & EDA,
-     agar kartu manapun yang lebih pendek dari pasangannya (baik itu kartu
-     chart maupun kartu tabel/heatmap) tidak menyisakan area kosong di
-     bawahnya setelah grid men-stretch tinggi kartu ke baris yang sama.
-     Dibungkus min-width:981px karena di bawah itu grid-2 sudah jadi 1 kolom
-     (tidak ada stretch antar kartu lagi) dan supaya tidak menimpa tinggi
-     chart-box yang sudah disesuaikan khusus untuk mobile. */
-  @media (min-width:981px){
-    #proyeksi .grid-2 .card,
-    #eda .grid-2 .card{ display:flex; flex-direction:column; }
-
-    /* Kartu kedua (tabel/heatmap): konten dipusatkan vertikal mengisi kartu */
-    #proyeksi .grid-2 .card:nth-child(2) > div:last-child,
-    #eda .grid-2 .card:nth-child(2) > div:last-child{ flex:1; display:flex; flex-direction:column; justify-content:center; }
-    #proyeksi .grid-2 .card:nth-child(2) > div:last-child > table,
-    #eda .grid-2 .card:nth-child(2) > div:last-child > table{ margin-top:0; }
-
-    /* Kartu pertama (chart): chart-box ikut melar mengisi sisa tinggi kartu,
-       bukan tetap diam di angka fixed 260/320px saat kartu kedua lebih tinggi. */
-    #proyeksi .grid-2 .card:nth-child(1) .chart-box,
-    #eda .grid-2 .card:nth-child(1) .chart-box{ flex:1; height:auto; min-height:260px; }
-    #proyeksi .grid-2 .card:nth-child(1) .chart-box.tall{ min-height:320px; }
-  }
-
-
   .map-card{padding:0; overflow:hidden;}
   .map-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 0;}
   #map{height:460px; width:100%; margin-top:16px; filter: saturate(0.85);}
@@ -358,7 +333,6 @@
   .source-tags{display:flex; gap:8px; flex-wrap:wrap;}
   .tag{font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim); border:1px solid var(--border); padding:5px 10px; border-radius:7px;}
   .loading-note{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); text-align:center; padding:40px;}
-  .tbl-scroll-hint{display:none;}
 
   /* ===================== SCROLL REVEAL TRANSITION ===================== */
   .reveal-on-scroll{
@@ -399,28 +373,28 @@
   #peta.reveal-on-scroll .card{ transition:none; opacity:0; }
   #peta.reveal-on-scroll.is-visible{ opacity:1; }
   #peta.reveal-on-scroll.is-visible .section-head{
-    animation: radarFadeIn 2s cubic-bezier(.16,.8,.24,1) both;
+    animation: radarFadeIn 1s cubic-bezier(.16,.8,.24,1) both;
   }
   #peta.reveal-on-scroll.is-visible .map-card{
     position:relative;
-    animation: radarReveal 4.2s cubic-bezier(.16,.8,.24,1) .3s both;
+    animation: radarReveal 1.5s cubic-bezier(.16,.8,.24,1) .15s both;
   }
   #peta.reveal-on-scroll .map-card::after{
     content:''; position:absolute; top:0; left:0; width:3px; height:100%; z-index:6; pointer-events:none;
-    background: var(--ember);
+    background: var(--rain);
     box-shadow: none;
     opacity:0;
   }
   #peta.reveal-on-scroll.is-visible .map-card::after{
-    animation: radarScanbar 4.2s cubic-bezier(.16,.8,.24,1) .3s both;
+    animation: radarScanbar 1.5s cubic-bezier(.16,.8,.24,1) .15s both;
   }
   #peta.reveal-on-scroll .map-card::before{
     content:''; position:absolute; inset:0; z-index:5; pointer-events:none;
-    background: repeating-linear-gradient(90deg, rgba(255,122,51,.10) 0px, rgba(255,122,51,.10) 1px, transparent 1px, transparent 26px);
+    background: repeating-linear-gradient(90deg, rgba(79,184,208,.10) 0px, rgba(79,184,208,.10) 1px, transparent 1px, transparent 26px);
     opacity:0;
   }
   #peta.reveal-on-scroll.is-visible .map-card::before{
-    animation: radarGrid 4.2s cubic-bezier(.16,.8,.24,1) .3s both;
+    animation: radarGrid 1.5s cubic-bezier(.16,.8,.24,1) .15s both;
   }
   @keyframes radarFadeIn{
     0%{ opacity:0; transform:translateY(-10px); }
@@ -529,63 +503,6 @@
     .footer{flex-direction:column; align-items:flex-start; gap:14px;}
     .footer-right{width:100%; align-items:flex-start;}
     .source-tags{width:100%;}
-
-    /* --- Kartu & grid: jarak lebih rapat, judul tidak mepet tepi --- */
-    .grid-2, .grid-3, .grid-4{ gap:12px; }
-    .card-title{ font-size:13.5px; gap:7px; line-height:1.35; }
-    .card-title svg{ width:13.5px; height:13.5px; }
-    .card-sub{ font-size:11px; }
-    .eyebrow{ font-size:10.5px; gap:9px; }
-    .metric-row{ font-size:12px; padding:8px 0; }
-
-    /* --- Chart: tinggi disesuaikan supaya proporsional di layar sempit,
-       data & skala tetap sama, chart.js otomatis resize ke tinggi baru --- */
-    .chart-box{ height:230px; margin-top:12px; }
-    .chart-box.tall{ height:270px; }
-    .chart-box.short{ height:200px; }
-
-    /* --- Tabel data (10 grid rawan, hotspot terkini, wilayah terkering):
-       jangan dipaksa menyempit sampai teks tabrakan/wrap berantakan.
-       Beri lebar minimum supaya kontainer overflow-x:auto yang sudah ada
-       di HTML memicu scroll horizontal yang rapi, data tetap lengkap. --- */
-    table{ min-width:540px; font-size:12px; }
-    th{ padding:8px 9px; font-size:10px; }
-    td{ padding:9px 9px; white-space:nowrap; }
-    .status-chip{ font-size:10px; padding:3px 8px; }
-
-    /* Kecuali tabel Ringkasan Klasifikasi: sengaja dibuat fixed-layout
-       sempit (kolom persentase) supaya pas di kartu manapun tanpa scroll. */
-    #classification-report table{ min-width:0; font-size:inherit; }
-    #classification-report th,
-    #classification-report td{ white-space:nowrap; }
-
-    /* --- Confusion matrix: 2x2 tetap, padding & angka sedikit dikecilkan --- */
-    #confmatrix > div > div{ padding:11px !important; }
-    #confmatrix > div > div > div:first-child{ font-size:19px !important; }
-
-    /* --- Penanda "bisa digeser" untuk tabel & heatmap yang lebih lebar dari
-       layar: sebelumnya kontainer sudah overflow-x:auto & data tidak
-       dipotong, tapi scrollbar-nya nyaris tak kelihatan di tema gelap ini —
-       jadi kelihatannya seperti terpotong/rusak padahal cuma perlu digeser.
-       Ditambah label kecil + gradasi fade di tepi kanan sebagai penanda,
-       dan scrollbar horizontal diberi warna ember supaya terlihat jelas. --- */
-    .tbl-scroll-hint{
-      display:flex; align-items:center; gap:5px;
-      font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
-      margin-top:9px; margin-bottom:-2px;
-    }
-    .tbl-scroll-hint svg{ width:11px; height:11px; flex-shrink:0; animation: hintNudge 1.6s ease-in-out infinite; }
-    @keyframes hintNudge{ 0%,100%{ transform:translateX(0); opacity:.7; } 50%{ transform:translateX(3px); opacity:1; } }
-    .tbl-wrap{ position:relative; }
-    .tbl-wrap::after{
-      content:''; position:absolute; top:0; right:0; bottom:0; width:26px;
-      background:linear-gradient(to right, transparent, rgba(19,25,22,0.92) 70%);
-      pointer-events:none;
-    }
-    .tbl-wrap::-webkit-scrollbar{ height:6px; }
-    .tbl-wrap::-webkit-scrollbar-track{ background:rgba(255,255,255,0.04); border-radius:10px; }
-    .tbl-wrap::-webkit-scrollbar-thumb{ background:rgba(255,122,51,0.5); border-radius:10px; border:none; }
-
   }
   @media (max-width: 480px){
     .brand-text span{display:none;}
@@ -595,36 +512,7 @@
     .kpi-value{font-size:19px;}
     .gauge-value{font-size:27px;}
     .mobile-menu{left:12px; right:12px; top:70px;}
-
-    .card{ padding:14px; }
-    .card-title{ font-size:13px; }
-    .kpi{ padding:12px; }
-    .kpi-label{ font-size:11px; }
-    .chart-box{ height:210px; }
-    .chart-box.tall{ height:250px; }
-    .chart-box.short{ height:190px; }
-    #confmatrix > div > div{ padding:9px !important; }
-    #confmatrix > div > div > div:first-child{ font-size:17px !important; }
-    #confmatrix > div > div > div:last-child{ font-size:9.5px !important; }
   }
-</style>
-
-<style is:global>
-  /* Fix: "Heatmap Korelasi Fitur" dirender via innerHTML (JS) di runtime,
-     jadi tidak ikut kena scoping CSS Astro (data-astro-cid-...). Aturan
-     .tbl-scroll-hint di atas hanya berlaku ke instance statis di template,
-     bukan ke instance yang di-inject renderEDA(). Duplikat di sini sebagai
-     global rule supaya kena juga ke elemen yang dibuat lewat JS. */
-  .tbl-scroll-hint{ display:none; }
-  @media (max-width: 768px){
-    .tbl-scroll-hint{
-      display:flex; align-items:center; gap:5px;
-      font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
-      margin-top:9px; margin-bottom:-2px;
-    }
-    .tbl-scroll-hint svg{ width:11px; height:11px; flex-shrink:0; animation: hintNudge 1.6s ease-in-out infinite; }
-  }
-  @keyframes hintNudge{ 0%,100%{ transform:translateX(0); opacity:.7; } 50%{ transform:translateX(3px); opacity:1; } }
 </style>
 </head>
 <body id="top">
@@ -812,8 +700,7 @@
           10 Grid Paling Rawan Nasional
         </div>
         <div class="card-sub">Berdasarkan skor risiko tanggal analisis</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-        <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto;">
+        <div style="margin-top:10px; overflow-x:auto;">
           <table id="tbl-top-hazard">
             <thead><tr><th>Koordinat</th><th>Wilayah</th><th>Hujan 7h (rata²)</th><th>Risiko</th><th>Status</th></tr></thead>
             <tbody><tr><td colspan="5" class="loading-note">memuat data…</td></tr></tbody>
@@ -939,8 +826,7 @@
           Titik Panas Terbaru
         </div>
         <div class="card-sub">14 hari terakhir, seluruh Indonesia, diurutkan intensitas (FRP)</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-        <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto; max-height:320px; overflow-y:auto;">
+        <div style="margin-top:10px; overflow-x:auto; max-height:320px; overflow-y:auto;">
           <table id="tbl-recent">
             <thead><tr><th>Tanggal</th><th>Koordinat</th><th>Wilayah</th><th>FRP</th><th>Kepercayaan</th><th>Waktu</th></tr></thead>
             <tbody><tr><td colspan="6" class="loading-note">memuat data…</td></tr></tbody>
@@ -953,8 +839,7 @@
           15 Grid Terkering Nasional
         </div>
         <div class="card-sub">Rata-rata hujan harian, 14 hari terakhir · terendah</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-        <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto;">
+        <div style="margin-top:10px; overflow-x:auto;">
           <table id="tbl-drought">
             <thead><tr><th>Koordinat</th><th>Hujan 14h (mm/hari)</th><th>Wilayah</th></tr></thead>
             <tbody><tr><td colspan="3" class="loading-note">memuat data…</td></tr></tbody>
@@ -1413,15 +1298,8 @@ function renderEDA(data){
   if(corr){
     const cols = corr.columns;
     const n = cols.length;
-    const labelColW = 100;   // lebar kolom label baris (px)
-    const cellMinW = 50;     // lebar minimum tiap sel angka (px) — dilebarkan dari 34 supaya label kolom horizontal muat 2 baris tanpa dirotasi
-    const gridMinWidth = labelColW + n * cellMinW;
-    let html = `<div class="tbl-scroll-hint">Geser untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>`;
-    html += `<div class="tbl-wrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">`;
-    html += `<div style="display:grid; grid-template-columns: ${labelColW}px repeat(${n}, minmax(${cellMinW}px, 1fr)); gap:3px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; min-width:${gridMinWidth}px;">`;
-    // Label kolom: horizontal (bukan vertical-rl) supaya terbaca langsung tanpa miringin kepala.
-    // Underscore diberi <wbr> sebagai titik potong kata yang rapi saat wrap 2 baris.
-    html += `<div></div>` + cols.map(c=>`<div style="color:var(--text-faint); text-align:center; line-height:1.25; padding-bottom:4px; word-break:break-word; overflow-wrap:anywhere; align-self:end;">${c.split('_').join('_<wbr>')}</div>`).join('');
+    let html = `<div style="display:grid; grid-template-columns: 110px repeat(${n}, 1fr); gap:3px; font-family:'IBM Plex Mono',monospace; font-size:9.5px;">`;
+    html += `<div></div>` + cols.map(c=>`<div style="writing-mode:vertical-rl; transform:rotate(180deg); color:var(--text-faint); text-align:left; padding-bottom:4px;">${c}</div>`).join('');
     corr.matrix.forEach((row,i)=>{
       html += `<div style="color:var(--text-dim); display:flex; align-items:center; padding-right:6px; justify-content:flex-end;">${cols[i]}</div>`;
       row.forEach(v=>{
@@ -1430,7 +1308,7 @@ function renderEDA(data){
         html += `<div title="${v.toFixed(2)}" style="aspect-ratio:1; background:${color}; border-radius:3px; display:flex; align-items:center; justify-content:center; color:${alpha>0.55?'#0B0F0D':'#8FA398'};">${v.toFixed(1)}</div>`;
       });
     });
-    html += '</div></div>';
+    html += '</div>';
     document.getElementById('corr-grid').innerHTML = html;
   }
 }
@@ -1460,7 +1338,7 @@ function renderModel(data){
       {label:`ROC (AUC ${(data.model?.auc_roc||0).toFixed(3)})`, data: roc.tpr, borderColor:EMBER, backgroundColor:'rgba(255,122,51,0.1)', fill:true, pointRadius:0, tension:.2, borderWidth:2},
       {label:'Acak', data: roc.fpr, borderColor:'#3A4A42', borderDash:[3,3], pointRadius:0, borderWidth:1.5}
     ]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:9,boxHeight:9, font:{size:10}}}}, scales:{x:{title:{display:true,text:'FPR', font:{size:10}}, grid:{display:false}, ticks:{maxTicksLimit:6}}, y:{title:{display:true,text:'TPR', font:{size:10}}, grid:{color:'#1E2723'}, ticks:{maxTicksLimit:6}}}}
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:9,boxHeight:9, font:{size:10}}}}, scales:{x:{title:{display:true,text:'FPR', font:{size:10}}, grid:{display:false}}, y:{title:{display:true,text:'TPR', font:{size:10}}, grid:{color:'#1E2723'}}}}
   });
 
   const rep = data.model?.classification_report || {};

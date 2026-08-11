@@ -1,0 +1,14 @@
+{
+  "name": "Karhutla EWS — Sistem Peringatan Dini Kebakaran Hutan Indonesia",
+  "short_name": "Karhutla EWS",
+  "description": "Peringatan dini karhutla seluruh Indonesia berbasis fusi data titik panas NASA FIRMS dan curah hujan GPM IMERG, diproses model XGBoost.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B0F0D",
+  "theme_color": "#0B0F0D",
+  "lang": "id",
+  "icons": [
+    { "src": "/favicon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
