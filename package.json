@@ -1,0 +1,18 @@
+{
+  "name": "karhutla-ews",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Karhutla EWS — Sistem Peringatan Dini Kebakaran Hutan Indonesia (FIRMS + GPM IMERG + XGBoost)",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "data:generate": "python3 scripts/generate_dashboard_data.py"
+  },
+  "dependencies": {
+    "astro": "^4.16.0"
+  }
+}
