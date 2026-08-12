@@ -136,66 +136,45 @@
   .icon-btn svg{width:14px; height:14px;}
   .icon-btn.notif-on{color:var(--ember); border-color:rgba(255,122,51,0.4);}
 
-  /* Hamburger toggle (mobile nav) */
-  .hamburger-btn{display:none;}
-  .hamburger-btn .ham-line{transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .2s ease; transform-box:fill-box; transform-origin:50% 50%;}
-  .hamburger-btn.open .ham-line1{transform: translateY(5px) rotate(45deg);}
-  .hamburger-btn.open .ham-line2{opacity:0;}
-  .hamburger-btn.open .ham-line3{transform: translateY(-5px) rotate(-45deg);}
-
-  /* Mobile nav dropdown + backdrop */
-  .mobile-menu-backdrop{
-    position:fixed; inset:0; z-index:90;
-    background:rgba(4,6,5,0.55);
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    opacity:0; visibility:hidden; pointer-events:none;
-    transition: opacity .25s ease, visibility 0s linear .25s;
+  /* ================= BOTTOM NAV (mobile) =================
+     Menggantikan hamburger + slide-out menu. Pill mengambang di bawah
+     layar, gaya glassmorphic senada topnav, ikon + label vertikal. */
+  .bottom-nav{
+    display:none;
+    position:fixed; left:14px; right:14px; bottom:14px;
+    z-index:100;
+    align-items:stretch; justify-content:space-between; gap:2px;
+    padding:7px 7px;
+    border-radius:999px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0) 40%),
+      linear-gradient(155deg, rgba(28,37,33,0.82), rgba(11,15,13,0.86));
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(236,239,234,0.09);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.07) inset,
+      0 14px 34px -10px rgba(0,0,0,0.6);
+    padding-bottom: calc(7px + env(safe-area-inset-bottom));
   }
-  .mobile-menu-backdrop.show{
-    opacity:1; visibility:visible; pointer-events:auto;
-    transition: opacity .25s ease, visibility 0s;
+  .bn-link{
+    flex:1; min-width:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; padding:7px 2px; border-radius:999px;
+    color:var(--text-faint);
+    font-family:var(--font-body); font-size:9.5px; font-weight:600; letter-spacing:-0.01em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    transition: color .18s ease, background .18s ease, transform .12s ease;
+    -webkit-tap-highlight-color:transparent;
   }
-  .mobile-menu{
-    position:fixed; top:76px; left:16px; right:16px; max-width:420px; margin:0 auto;
-    z-index:101; max-height:calc(100vh - 100px); overflow-y:auto;
-    display:flex; flex-direction:column; gap:2px;
-    padding:9px;
-    border-radius:16px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 30%), var(--bg-elev);
-    border:1px solid rgba(236,239,234,0.09);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 45px -14px rgba(0,0,0,0.65);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    opacity:0; transform: translateY(-8px) scale(.97); transform-origin:top center;
-    pointer-events:none; visibility:hidden;
-    transition: opacity .2s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1), visibility 0s linear .2s;
-  }
-  .mobile-menu.open{
-    opacity:1; transform:translateY(0) scale(1); pointer-events:auto; visibility:visible;
-    transition: opacity .2s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1), visibility 0s;
-  }
-  .mobile-menu-link{
-    font-size:12.5px; font-weight:500; color:var(--text-dim);
-    padding:10px 12px; border-radius:10px;
-    display:flex; align-items:center; gap:9px;
-    opacity:0; transform:translateY(-6px);
-    transition: color .15s ease, background .15s ease, opacity .22s ease, transform .22s ease;
-  }
-  .mobile-menu.open .mobile-menu-link{opacity:1; transform:translateY(0);}
-  .mobile-menu.open .mobile-menu-link:nth-child(1){transition-delay:.02s;}
-  .mobile-menu.open .mobile-menu-link:nth-child(2){transition-delay:.05s;}
-  .mobile-menu.open .mobile-menu-link:nth-child(3){transition-delay:.08s;}
-  .mobile-menu.open .mobile-menu-link:nth-child(4){transition-delay:.11s;}
-  .mobile-menu.open .mobile-menu-link:nth-child(5){transition-delay:.14s;}
-  .mobile-menu.open .mobile-menu-link:nth-child(6){transition-delay:.17s;}
-  .mobile-menu-link .mm-dot{width:4px; height:4px; border-radius:50%; background:currentColor; opacity:.4; flex-shrink:0;}
-  .mobile-menu-link:hover, .mobile-menu-link:active{color:var(--text); background:rgba(255,255,255,0.06);}
-  .mobile-menu-link.active{color:var(--bg); background:var(--ember); font-weight:600;}
-  .mobile-menu-link.active .mm-dot{background:var(--bg); opacity:1;}
+  .bn-link svg{width:19px; height:19px; flex-shrink:0; transition: transform .18s ease;}
+  .bn-link:active{transform:scale(0.93);}
+  .bn-link.active{color:var(--ember); background:rgba(255,122,51,0.13);}
+  .bn-link.active svg{transform:translateY(-1px);}
 
   @media (max-width: 1100px){
+    .bottom-nav{display:flex;}
     .nav-links{display:none;}
-    .hamburger-btn{display:flex;}
   }
 
   .wrap{max-width:1360px; margin:0 auto; padding: 0 28px 80px;}
@@ -358,7 +337,17 @@
   .source-tags{display:flex; gap:8px; flex-wrap:wrap;}
   .tag{font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim); border:1px solid var(--border); padding:5px 10px; border-radius:7px;}
   .loading-note{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); text-align:center; padding:40px;}
-  .tbl-scroll-hint{display:none;}
+  /* Hint "geser tabel": display diatur per breakpoint di bawah. Panahnya
+     karakter teks biasa (bukan SVG) supaya mustahil membesar tak terkendali
+     akibat isu cache/loading CSS apa pun — teks tidak punya "ukuran default
+     browser" seperti gambar/vector. */
+  .tbl-scroll-hint{
+    display:none; align-items:center; gap:5px;
+    font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
+    margin-top:9px; margin-bottom:-2px;
+  }
+  .hint-arrow{display:inline-block; font-size:11px; line-height:1; animation: hintNudge 1.6s ease-in-out infinite;}
+  @keyframes hintNudge{ 0%,100%{ transform:translateX(0); opacity:.7; } 50%{ transform:translateX(3px); opacity:1; } }
 
   /* ===================== SCROLL REVEAL TRANSITION ===================== */
   .reveal-on-scroll{
@@ -582,14 +571,9 @@
        dipotong, tapi scrollbar-nya nyaris tak kelihatan di tema gelap ini —
        jadi kelihatannya seperti terpotong/rusak padahal cuma perlu digeser.
        Ditambah label kecil + gradasi fade di tepi kanan sebagai penanda,
-       dan scrollbar horizontal diberi warna ember supaya terlihat jelas. --- */
-    .tbl-scroll-hint{
-      display:flex; align-items:center; gap:5px;
-      font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
-      margin-top:9px; margin-bottom:-2px;
-    }
-    .tbl-scroll-hint svg{ width:11px; height:11px; flex-shrink:0; animation: hintNudge 1.6s ease-in-out infinite; }
-    @keyframes hintNudge{ 0%,100%{ transform:translateX(0); opacity:.7; } 50%{ transform:translateX(3px); opacity:1; } }
+       dan scrollbar horizontal diberi warna ember supaya terlihat jelas.
+       (ukuran ikon dikunci di CSS dasar, di sini cukup toggle tampilannya) --- */
+    .tbl-scroll-hint{ display:flex; }
     .tbl-wrap{ position:relative; }
     .tbl-wrap::after{
       content:''; position:absolute; top:0; right:0; bottom:0; width:26px;
@@ -603,12 +587,14 @@
   }
   @media (max-width: 480px){
     .brand-text span{display:none;}
-    .live-pill span:last-child{display:none;}
-    .live-pill{padding:6px 8px;}
-    .topnav{padding:8px 8px 8px 12px;}
+    .live-pill{padding:5px 9px; font-size:9.5px; gap:5px;}
+    .live-pill span:last-child{max-width:108px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .topnav{padding:8px 8px 8px 12px; gap:8px;}
     .kpi-value{font-size:19px;}
     .gauge-value{font-size:27px;}
-    .mobile-menu{left:12px; right:12px; top:70px;}
+    .bottom-nav{left:10px; right:10px; padding:6px;}
+    .bn-link{font-size:9px; padding:6px 1px;}
+    .bn-link svg{width:18px; height:18px;}
 
     .card{ padding:14px; }
     .card-title{ font-size:13px; }
@@ -620,6 +606,11 @@
     #confmatrix > div > div{ padding:9px !important; }
     #confmatrix > div > div > div:first-child{ font-size:17px !important; }
     #confmatrix > div > div > div:last-child{ font-size:9.5px !important; }
+  }
+
+  /* Beri ruang di bawah supaya konten & footer tidak tertutup bottom-nav */
+  @media (max-width: 1100px){
+    .wrap{ padding-bottom: 104px; }
   }
 </style>
 </head>
@@ -646,25 +637,36 @@
     <div class="icon-btn" id="notif-btn" title="Aktifkan notifikasi browser">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
     </div>
-    <button type="button" class="icon-btn hamburger-btn" id="hamburger-btn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="mobile-menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <line class="ham-line ham-line1" x1="4" y1="7" x2="20" y2="7"/>
-        <line class="ham-line ham-line2" x1="4" y1="12" x2="20" y2="12"/>
-        <line class="ham-line ham-line3" x1="4" y1="17" x2="20" y2="17"/>
-      </svg>
-    </button>
   </div>
 </nav>
 </div>
 
-<div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
-<nav class="mobile-menu" id="mobile-menu" aria-label="Menu navigasi mobile">
-  <a href="#ringkasan" class="mobile-menu-link active"><span class="mm-dot"></span>Ringkasan</a>
-  <a href="#peta" class="mobile-menu-link"><span class="mm-dot"></span>Peta Risiko</a>
-  <a href="#proyeksi" class="mobile-menu-link"><span class="mm-dot"></span>Proyeksi 7 Hari</a>
-  <a href="#nasional" class="mobile-menu-link"><span class="mm-dot"></span>Analitik Nasional</a>
-  <a href="#model" class="mobile-menu-link"><span class="mm-dot"></span>Kinerja Model</a>
-  <a href="#terkini" class="mobile-menu-link"><span class="mm-dot"></span>Kondisi Terkini</a>
+<!-- ================= BOTTOM NAV (mobile) ================= -->
+<nav class="bottom-nav" id="bottom-nav" aria-label="Navigasi bawah">
+  <a href="#ringkasan" class="bn-link active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5"/><path d="M6 9.5V19a1 1 0 0 0 1 1h3v-5a2 2 0 1 1 4 0v5h3a1 1 0 0 0 1-1V9.5"/></svg>
+    <span>Ringkasan</span>
+  </a>
+  <a href="#peta" class="bn-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.7-7-11.2A7 7 0 0 1 19 9.8C19 15.3 12 21 12 21Z"/><circle cx="12" cy="9.8" r="2.3"/></svg>
+    <span>Peta</span>
+  </a>
+  <a href="#proyeksi" class="bn-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 5-5 4 3 7-8"/><path d="M15 6h5v5"/></svg>
+    <span>Proyeksi</span>
+  </a>
+  <a href="#nasional" class="bn-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg>
+    <span>Nasional</span>
+  </a>
+  <a href="#model" class="bn-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15 15.5 9.5"/><circle cx="12" cy="15" r="1.15" fill="currentColor" stroke="none"/></svg>
+    <span>Model</span>
+  </a>
+  <a href="#terkini" class="bn-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3.5l2-6.5L13 18l2.5-6H21"/></svg>
+    <span>Terkini</span>
+  </a>
 </nav>
 
 <div class="wrap">
@@ -808,8 +810,8 @@
           10 Grid Paling Rawan Nasional
         </div>
         <div class="card-sub">Berdasarkan skor risiko tanggal analisis</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-        <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto;">
+        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>
+        <div class="tbl-wrap" style="margin-top:10px;">
           <table id="tbl-top-hazard">
             <thead><tr><th>Koordinat</th><th>Wilayah</th><th>Hujan 7h (rata²)</th><th>Risiko</th><th>Status</th></tr></thead>
             <tbody><tr><td colspan="5" class="loading-note">memuat data…</td></tr></tbody>
@@ -935,7 +937,7 @@
           Titik Panas Terbaru
         </div>
         <div class="card-sub">14 hari terakhir, seluruh Indonesia, diurutkan intensitas (FRP)</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>
         <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto; max-height:320px; overflow-y:auto;">
           <table id="tbl-recent">
             <thead><tr><th>Tanggal</th><th>Koordinat</th><th>Wilayah</th><th>FRP</th><th>Kepercayaan</th><th>Waktu</th></tr></thead>
@@ -949,7 +951,7 @@
           15 Grid Terkering Nasional
         </div>
         <div class="card-sub">Rata-rata hujan harian, 14 hari terakhir · terendah</div>
-        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>
         <div class="tbl-wrap" style="margin-top:10px; overflow-x:auto;">
           <table id="tbl-drought">
             <thead><tr><th>Koordinat</th><th>Hujan 14h (mm/hari)</th><th>Wilayah</th></tr></thead>
@@ -1410,14 +1412,14 @@ function renderEDA(data){
     const cols = corr.columns;
     const n = cols.length;
     const labelColW = 100;   // lebar kolom label baris (px)
-    const cellMinW = 34;     // lebar minimum tiap sel angka (px) — jaga agar tidak squish di HP
+    const cellMinW = 72;     // lebar minimum tiap sel angka (px) — cukup lebar untuk label horizontal
     const gridMinWidth = labelColW + n * cellMinW;
-    let html = `<div class="tbl-scroll-hint">Geser untuk lihat kolom lainnya <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>`;
+    let html = `<div class="tbl-scroll-hint">Geser untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>`;
     html += `<div class="tbl-wrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">`;
     html += `<div style="display:grid; grid-template-columns: ${labelColW}px repeat(${n}, minmax(${cellMinW}px, 1fr)); gap:3px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; min-width:${gridMinWidth}px;">`;
-    html += `<div></div>` + cols.map(c=>`<div style="writing-mode:vertical-rl; transform:rotate(180deg); color:var(--text-faint); text-align:left; padding-bottom:4px;">${c}</div>`).join('');
+    html += `<div></div>` + cols.map(c=>`<div style="color:var(--text-faint); text-align:center; white-space:nowrap; padding-bottom:8px; align-self:end;">${c}</div>`).join('');
     corr.matrix.forEach((row,i)=>{
-      html += `<div style="color:var(--text-dim); display:flex; align-items:center; padding-right:6px; justify-content:flex-end;">${cols[i]}</div>`;
+      html += `<div style="color:var(--text-dim); display:flex; align-items:center; padding-right:6px; justify-content:flex-end; white-space:nowrap;">${cols[i]}</div>`;
       row.forEach(v=>{
         const alpha = Math.abs(v);
         const color = v>=0 ? `rgba(255,122,51,${alpha})` : `rgba(79,184,208,${alpha})`;
@@ -1550,36 +1552,6 @@ function checkAndNotify(data){
   bannerBtn.onclick = requestPerm;
 }
 
-/* ---------------- HAMBURGER MENU (MOBILE) ---------------- */
-(function(){
-  const btn = document.getElementById('hamburger-btn');
-  const menu = document.getElementById('mobile-menu');
-  const backdrop = document.getElementById('mobile-menu-backdrop');
-  if(!btn || !menu || !backdrop) return;
-
-  function openMenu(){
-    btn.classList.add('open');
-    btn.setAttribute('aria-expanded', 'true');
-    menu.classList.add('open');
-    backdrop.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMenu(){
-    btn.classList.remove('open');
-    btn.setAttribute('aria-expanded', 'false');
-    menu.classList.remove('open');
-    backdrop.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-  btn.addEventListener('click', ()=>{
-    menu.classList.contains('open') ? closeMenu() : openMenu();
-  });
-  backdrop.addEventListener('click', closeMenu);
-  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
-  window.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
-  window.addEventListener('resize', ()=>{ if(window.innerWidth > 1100) closeMenu(); });
-})();
-
 /* ---------------- SCROLL REVEAL TRANSITION ---------------- */
 (function(){
   const revealEls = document.querySelectorAll('.reveal-on-scroll');
@@ -1602,8 +1574,8 @@ function checkAndNotify(data){
   revealEls.forEach(el => io.observe(el));
 })();
 
-/* Scrollspy sederhana (sinkron nav desktop & menu mobile) */
-const navAnchors = document.querySelectorAll('.nav-links a, .mobile-menu-link');
+/* Scrollspy sederhana (sinkron nav desktop & bottom nav mobile) */
+const navAnchors = document.querySelectorAll('.nav-links a, .bn-link');
 const hrefToSection = new Map();
 navAnchors.forEach(a=>{
   const href = a.getAttribute('href');
