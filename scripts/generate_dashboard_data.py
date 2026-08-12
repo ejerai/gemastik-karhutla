@@ -485,7 +485,15 @@ def build_realtime(fire_rt: pd.DataFrame, gpm_feat: pd.DataFrame, target_date: p
 
     today_grid = gpm_feat[gpm_feat.acq_date == target_date].dropna(subset=["precip_roll14"]).copy()
     today_grid["region"] = classify_region_vectorized(today_grid["lat_grid"], today_grid["lon_grid"])
-    drought_top = today_grid.sort_values("precip_roll14").head(15)
+    # Exclude fallback "Lainnya" (Nusa Tenggara/Maluku/area luar box pulau utama)
+    # SEBELUM ambil top 15 terkering, supaya kartu selalu menampilkan 15 grid
+    # dari wilayah yang teridentifikasi jelas, bukan sisa slot yang nanti
+    # dibuang di frontend (yang bisa bikin baris tampil < 15).
+    drought_top = (
+        today_grid[today_grid["region"] != "Lainnya"]
+        .sort_values("precip_roll14")
+        .head(15)
+    )
     drought_records = [
         {
             "lat": round(float(r.lat_grid), 2),
