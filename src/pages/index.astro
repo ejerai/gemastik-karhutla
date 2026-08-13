@@ -1026,18 +1026,37 @@
        dan scrollbar horizontal diberi warna ember supaya terlihat jelas.
        (ukuran ikon dikunci di CSS dasar, di sini cukup toggle tampilannya)
 
-       PENTING: fade-nya SENGAJA tidak ditaruh di .tbl-wrap. .tbl-wrap itu
-       sendiri adalah elemen yang overflow-x:auto (yang discroll), jadi kalau
-       ::after ditaruh di situ, kotak fade-nya ikut ke-scroll bareng isi
-       tabel dan nyangkut nabrak teks header di tengah-tengah tabel (bug
-       yang dilaporkan). Fade dipindah ke .tbl-outer, pembungkus BARU di
-       luar .tbl-wrap yang diam/tidak ikut discroll, jadi tetap nempel rapi
-       di tepi kanan kartu. --- */
+       PENTING soal fade-nya:
+       1) Fade SENGAJA tidak ditaruh di .tbl-wrap. .tbl-wrap itu sendiri
+          adalah elemen yang overflow-x:auto (yang discroll), jadi kalau
+          ::after ditaruh di situ, kotak fade-nya ikut ke-scroll bareng isi
+          tabel dan nyangkut nabrak teks header di tengah-tengah tabel.
+       2) Fade juga SENGAJA tidak dikasih warna solid rata (mis. flat
+          var(--bg-elev)). Background asli .card itu GRADIENT diagonal
+          (dari --bg-elev di atas, meluruh ke --card-grad-2 -- warna yang
+          sama tapi transparan -- di bawah), jadi makin ke bawah kartu,
+          warna aslinya makin pudar/transparan. Kalau fade dikasih satu
+          warna solid rata dari atas sampai bawah, bagian bawahnya jadi
+          keliatan beda warna/kurang rapi (nggak nyambung sama gradient
+          aslinya) -- itu bug yang dilaporkan.
+          Solusinya: fade-nya dibuat pakai GRADIENT VERTIKAL YANG SAMA
+          PERSIS dengan .card (bg-elev -> card-grad-2), lalu transisi kiri-
+          ke-kanan-nya pakai mask-image (bukan ikut dicampur ke stop warna
+          gradient-nya). Jadi di setiap ketinggian, warna fade selalu
+          senada dengan warna asli kartu di titik itu -- termasuk pas
+          gradient-nya udah memudar transparan di bawah. Dipasang di
+          .card (bukan .tbl-outer) supaya tinggi kotak fade-nya sama
+          persis dengan tinggi kotak gradient .card, jadi hitungan
+          posisi warnanya presisi 1:1, bukan cuma potongan sebagian. --- */
     .tbl-scroll-hint{ display:flex; }
-    .tbl-outer{ position:relative; }
-    .tbl-outer::after{
+    .card:has(.tbl-outer){ position:relative; }
+    .card:has(.tbl-outer)::after{
       content:''; position:absolute; top:0; right:0; bottom:0; width:26px;
-      background:linear-gradient(to right, transparent, var(--bg-elev) 70%);
+      background: linear-gradient(180deg, var(--bg-elev), var(--card-grad-2));
+      -webkit-mask-image: linear-gradient(to right, transparent, black 70%);
+              mask-image: linear-gradient(to right, transparent, black 70%);
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
       pointer-events:none;
     }
   }
