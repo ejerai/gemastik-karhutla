@@ -159,9 +159,29 @@
     --alert-text-strong: #5C140D;
   }
   /* Transisi halus tiap kali tema di-toggle, supaya pergantian warna
-     terasa mulus, bukan "kedip" berpindah tema secara instan. */
+     terasa mulus, bukan "kedip" berpindah tema secara instan. Dipakai
+     sebagai fallback untuk browser yang belum dukung View Transitions
+     API (mis. Firefox) atau saat prefers-reduced-motion aktif. */
   html.theme-transition, html.theme-transition *{
     transition: background-color .35s ease, border-color .35s ease, color .35s ease, box-shadow .35s ease !important;
+  }
+
+  /* ===== Curtain wipe — tema baru "naik" dari bawah ke atas layar
+     seperti tirai saat tema berganti, pakai View Transitions API
+     bawaan browser. Matikan animasi default-nya (fade + resize grup);
+     arah & kecepatan wipe dikontrol lewat Web Animations API di JS
+     (lihat script toggle). ===== */
+  @media (prefers-reduced-motion: no-preference){
+    ::view-transition-group(root){
+      animation: none;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root){
+      animation: none;
+      mix-blend-mode: normal;
+    }
+    ::view-transition-old(root){ z-index: 1; }
+    ::view-transition-new(root){ z-index: 2; }
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -1276,13 +1296,8 @@
     document.querySelectorAll('meta[name="theme-color"], meta[name="msapplication-TileColor"]').forEach(function(m){ m.setAttribute('content', bg); });
   }
 
-  function setTheme(theme, opts){
-    opts = opts || {};
+  function applyTheme(theme){
     var html = document.documentElement;
-    if(opts.animate){
-      html.classList.add('theme-transition');
-      window.setTimeout(function(){ html.classList.remove('theme-transition'); }, 400);
-    }
     if(theme === 'light') html.setAttribute('data-theme', 'light');
     else html.removeAttribute('data-theme');
     try{ localStorage.setItem('karhutla-theme', theme); }catch(e){}
@@ -1290,12 +1305,62 @@
     if(window.applyChartTheme) window.applyChartTheme();
   }
 
+  // Fallback lama (cross-fade halus) — dipakai kalau overlay tidak ada
+  // atau pengguna minta reduced motion.
+  function setThemeFade(theme){
+    var html = document.documentElement;
+    html.classList.add('theme-transition');
+    window.setTimeout(function(){ html.classList.remove('theme-transition'); }, 400);
+    applyTheme(theme);
+  }
+
+  function prefersReducedMotion(){
+    try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; }
+  }
+
+  /* ===== Curtain wipe dari bawah ke atas =====
+     Pakai View Transitions API bawaan browser: browser "foto" tampilan
+     lama & baru, lalu kita kontrol clip-path (inset) lewat Web Animations
+     API supaya tema baru "naik" seperti tirai dari tepi bawah layar ke
+     atas. Kalau browser belum dukung (mis. Firefox) atau reduced-motion
+     aktif, turun ke cross-fade lama supaya tetap mulus. */
+  var revealBusy = false;
+  function playCurtainWipe(theme){
+    if(!document.startViewTransition || prefersReducedMotion()){
+      setThemeFade(theme);
+      return;
+    }
+    if(revealBusy) return;
+    revealBusy = true;
+
+    var transition = document.startViewTransition(function(){ applyTheme(theme); });
+
+    transition.ready.then(function(){
+      document.documentElement.animate(
+        {
+          clipPath: [
+            'inset(100% 0 0 0)',
+            'inset(0% 0 0 0)'
+          ]
+        },
+        {
+          duration: 900,
+          easing: 'cubic-bezier(.4,0,.2,1)',
+          pseudoElement: '::view-transition-new(root)'
+        }
+      );
+    });
+
+    transition.finished.finally(function(){ revealBusy = false; });
+  }
+
   updateMetaThemeColor();
 
   var btn = document.getElementById('theme-toggle');
+
   if(btn){
     btn.addEventListener('click', function(){
-      setTheme(getTheme() === 'light' ? 'dark' : 'light', {animate:true});
+      playCurtainWipe(getTheme() === 'light' ? 'dark' : 'light');
     });
   }
 
@@ -1306,7 +1371,7 @@
     var mq = window.matchMedia('(prefers-color-scheme: light)');
     mq.addEventListener('change', function(e){
       if(localStorage.getItem('karhutla-theme')) return;
-      setTheme(e.matches ? 'light' : 'dark', {animate:true});
+      playCurtainWipe(e.matches ? 'light' : 'dark');
     });
   }catch(e){}
 })();
