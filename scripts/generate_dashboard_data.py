@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
 """
-Karhutla EWS — Pipeline generator dashboard_data.json
-=======================================================
-Menggabungkan data titik api NASA FIRMS (VIIRS/MODIS) dengan curah hujan
-NASA GPM IMERG untuk SELURUH INDONESIA (bukan hanya Kalimantan), melatih
-model XGBoost untuk memprediksi risiko karhutla per grid 0.1°, lalu
-mengekspor satu file JSON (`public/dashboard_data.json`) yang menjadi
-satu-satunya sumber data untuk `src/pages/index.astro`.
-
 Input (folder ./data, relatif terhadap script ini):
   - fire_indonesia_gpm_aligned.csv  -> arsip hotspot FIRMS historis (label training)
   - fire_realtime_14d.csv           -> hotspot FIRMS 14 hari terakhir (near real-time)
@@ -39,9 +31,7 @@ from xgboost import XGBClassifier
 sys.path.insert(0, str(Path(__file__).parent))
 from regions import classify_region_vectorized  # noqa: E402
 
-# --------------------------------------------------------------------------
 # Konfigurasi
-# --------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR / "data"
 if not DATA_DIR.exists():
@@ -58,8 +48,6 @@ STATUS_THRESHOLDS = [
 ]
 STATUS_SAFE = "Aman"
 
-# Berapa banyak titik grid "Aman" yang dikirim ke peta (biar ringan di browser).
-# Semua grid Waspada ke atas SELALU dikirim penuh (seluruh Indonesia).
 SAFE_SAMPLE_RATE = 0.12
 MAX_SAFE_POINTS = 9000
 
@@ -107,10 +95,7 @@ def normalize_confidence(val) -> str:
     except ValueError:
         return "nominal"
 
-
-# --------------------------------------------------------------------------
 # 1. Load data mentah
-# --------------------------------------------------------------------------
 def load_raw():
     log("Membaca data mentah...")
     fire_hist = pd.read_csv(DATA_DIR / "fire_indonesia_gpm_aligned.csv")
@@ -133,10 +118,7 @@ def load_raw():
         f"lon {gpm.lon_grid.min():.2f}..{gpm.lon_grid.max():.2f})")
     return fire_hist, fire_rt, gpm
 
-
-# --------------------------------------------------------------------------
 # 2. Fitur curah hujan (lag & rolling) per sel grid, nasional
-# --------------------------------------------------------------------------
 def build_precip_features(gpm: pd.DataFrame) -> pd.DataFrame:
     log("Menghitung fitur curah hujan (lag/rolling) per sel grid nasional...")
     gpm = gpm.sort_values(["lat_grid", "lon_grid", "acq_date"]).reset_index(drop=True)
@@ -155,10 +137,7 @@ def build_precip_features(gpm: pd.DataFrame) -> pd.DataFrame:
     gpm["month"] = gpm["acq_date"].dt.month
     return gpm
 
-
-# --------------------------------------------------------------------------
 # 3. Label fire_occurred per sel grid-hari dari arsip FIRMS historis
-# --------------------------------------------------------------------------
 def build_training_table(gpm_feat: pd.DataFrame, fire_hist: pd.DataFrame) -> pd.DataFrame:
     log("Menautkan hotspot historis ke grid GPM (spatial-temporal join) seluruh Indonesia...")
     fh = fire_hist.copy()
@@ -183,10 +162,7 @@ def build_training_table(gpm_feat: pd.DataFrame, fire_hist: pd.DataFrame) -> pd.
         f"{n_pos:,} positif ({n_pos/len(train_grid)*100:.2f}% kebakaran)")
     return train_grid
 
-
-# --------------------------------------------------------------------------
 # 4. Latih model XGBoost
-# --------------------------------------------------------------------------
 def train_model(train_grid: pd.DataFrame):
     log("Melatih model XGBoost...")
     df = train_grid.dropna(subset=FEATURES + ["fire_occurred"]).copy()
@@ -284,10 +260,7 @@ def build_eda(df: pd.DataFrame) -> dict:
         },
     }
 
-
-# --------------------------------------------------------------------------
 # 5. Prediksi risiko nasional untuk tanggal target (EWS)
-# --------------------------------------------------------------------------
 def build_ews(model, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
     log(f"Menghitung peta risiko nasional untuk tanggal target {target_date.date()}...")
     today = gpm_feat[gpm_feat.acq_date == target_date].dropna(subset=FEATURES).copy()
@@ -307,7 +280,6 @@ def build_ews(model, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
     for region, sub in today.groupby("region"):
         region_summary[region] = sub["status"].value_counts().to_dict()
 
-    # Semua grid Waspada+ dikirim penuh (nasional), grid Aman disampel merata.
     hazard_mask = today["status"] != STATUS_SAFE
     hazard_pts = today[hazard_mask]
     safe_pts = today[~hazard_mask]
@@ -401,10 +373,7 @@ def build_projection(gpm_feat: pd.DataFrame, model, target_date: pd.Timestamp, d
         })
     return projection
 
-
-# --------------------------------------------------------------------------
 # 6. Ringkasan nasional (tren harian, distribusi regional, confidence, dll)
-# --------------------------------------------------------------------------
 def build_national(fire_hist: pd.DataFrame, fire_rt: pd.DataFrame):
     log("Menyusun ringkasan nasional (30 hari terakhir + arsip)...")
     fh = fire_hist.copy()
@@ -458,10 +427,7 @@ def build_national(fire_hist: pd.DataFrame, fire_rt: pd.DataFrame):
         "satellite": satellite,
     }, combined
 
-
-# --------------------------------------------------------------------------
 # 7. Blok realtime (hotspot terbaru + area rawan kekeringan)
-# --------------------------------------------------------------------------
 def build_realtime(fire_rt: pd.DataFrame, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
     log("Menyusun blok realtime (hotspot terbaru & area kering)...")
     rt = fire_rt.dropna(subset=["frp"]).copy()
@@ -485,10 +451,7 @@ def build_realtime(fire_rt: pd.DataFrame, gpm_feat: pd.DataFrame, target_date: p
 
     today_grid = gpm_feat[gpm_feat.acq_date == target_date].dropna(subset=["precip_roll14"]).copy()
     today_grid["region"] = classify_region_vectorized(today_grid["lat_grid"], today_grid["lon_grid"])
-    # Exclude fallback "Lainnya" (Nusa Tenggara/Maluku/area luar box pulau utama)
-    # SEBELUM ambil top 15 terkering, supaya kartu selalu menampilkan 15 grid
-    # dari wilayah yang teridentifikasi jelas, bukan sisa slot yang nanti
-    # dibuang di frontend (yang bisa bikin baris tampil < 15).
+
     drought_top = (
         today_grid[today_grid["region"] != "Lainnya"]
         .sort_values("precip_roll14")
@@ -511,9 +474,7 @@ def build_realtime(fire_rt: pd.DataFrame, gpm_feat: pd.DataFrame, target_date: p
     }
 
 
-# --------------------------------------------------------------------------
-# Main
-# --------------------------------------------------------------------------
+# main
 def main():
     fire_hist, fire_rt, gpm = load_raw()
     gpm_feat = build_precip_features(gpm)

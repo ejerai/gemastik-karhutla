@@ -1,10 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <rect width="24" height="24" rx="6" fill="#0B0F0D"/>
-  <g fill="none" stroke="#FF7A33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="6" cy="18" r="1.5" fill="#FF7A33" stroke="none"/>
-    <path d="M6 13.2A4.8 4.8 0 0 1 10.8 18"/>
-    <path d="M6 9.6A8.4 8.4 0 0 1 14.4 18"/>
-    <path d="M6 6A12 12 0 0 1 18 18"/>
-    <circle cx="17.3" cy="7.3" r="1.4" fill="#FFB454" stroke="none"/>
+  <defs>
+    <linearGradient id="flameGrad" x1="0" y1="24" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF5A00"/>
+      <stop offset="0.55" stop-color="#FF8A1F"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 13.2A4.8 4.8 0 0 1 10.8 18" stroke="url(#flameGrad)" stroke-width="2.2"/>
+    <path d="M6 9.6A8.4 8.4 0 0 1 14.4 18" stroke="url(#flameGrad)" stroke-width="2.2"/>
+    <path d="M6 6A12 12 0 0 1 18 18" stroke="url(#flameGrad)" stroke-width="2.2"/>
+    <circle cx="17.3" cy="7.3" r="1.4" fill="url(#flameGrad)" stroke="none"/>
   </g>
+  <path d="M6,19.2 C4.4,18.1 4.2,16.3 5.2,14.9 C5.6,14.3 5.8,13.9 6,13.4 C6.2,13.9 6.4,14.3 6.8,14.9 C7.8,16.3 7.6,18.1 6,19.2 Z" fill="url(#flameGrad)"/>
+  <path d="M6,18.3 C5.3,17.8 5.2,17 5.6,16.4 C5.8,16.1 5.9,15.9 6,15.6 C6.1,15.9 6.2,16.1 6.4,16.4 C6.8,17 6.7,17.8 6,18.3 Z" fill="#FFFFFF"/>
 </svg>

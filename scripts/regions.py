@@ -17,8 +17,6 @@ Referensi kasar batas wilayah (lat, lon dalam derajat desimal):
 """
 
 REGION_BOXES = [
-    # (nama, lon_min, lon_max, lat_min, lat_max)  -- urutan penting: dicek berurutan,
-    # kotak yang lebih spesifik/sempit diletakkan lebih dulu supaya menang di zona tumpang tindih.
     ("Sumatra",         94.5, 106.6,  -6.3,   6.3),
     ("Jawa",           105.0, 115.0,  -9.2,  -5.4),
     ("Bali & Nusa Tenggara", 114.3, 125.6, -11.2, -7.8),

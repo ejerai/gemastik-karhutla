@@ -1,5 +1,5 @@
 {
-  "name": "Karhutla EWS — Sistem Peringatan Dini Kebakaran Hutan Indonesia",
+  "name": "Karhutla EWS — three body problem",
   "short_name": "Karhutla EWS",
   "description": "Peringatan dini karhutla seluruh Indonesia berbasis fusi data titik panas NASA FIRMS dan curah hujan GPM IMERG, diproses model XGBoost.",
   "start_url": "/",
