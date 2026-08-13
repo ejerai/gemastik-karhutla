@@ -166,7 +166,7 @@
     transition: background-color .35s ease, border-color .35s ease, color .35s ease, box-shadow .35s ease !important;
   }
 
-  /* ===== Curtain wipe — tema baru "naik" dari bawah ke atas layar
+  /* ===== Curtain wipe — tema baru "turun" dari atas ke bawah layar
      seperti tirai saat tema berganti, pakai View Transitions API
      bawaan browser. Matikan animasi default-nya (fade + resize grup);
      arah & kecepatan wipe dikontrol lewat Web Animations API di JS
@@ -271,7 +271,6 @@
   .icon-btn{width:30px; height:30px; border-radius:999px; border:1px solid var(--hairline-08); background:var(--veil); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:.15s; flex-shrink:0;}
   .icon-btn:hover{color:var(--text); border-color:var(--hairline-hover); background:var(--hover-tint);}
   .icon-btn svg{width:14px; height:14px;}
-  .icon-btn.notif-on{color:var(--ember); border-color:rgba(255,122,51,0.4);}
 
   /* ================= BOTTOM NAV (mobile) =================
      Menggantikan hamburger + slide-out menu. Pill mengambang di bawah
@@ -420,8 +419,31 @@
   }
 
 
-  .map-card{padding:0; overflow:hidden;}
-  .map-fullscreen-btn{display:none;}
+  .map-card{padding:0; overflow:hidden; position:relative;}
+  /* ===== Tombol fullscreen peta — generik untuk desktop & mobile,
+     selalu di pojok kanan-atas kartu peta. Perilaku fullscreen-nya
+     (.map-card.map-fullscreen dst.) juga generik, bukan cuma mobile,
+     supaya klik tombol ini benar-benar fullscreen di semua ukuran layar. ===== */
+  .map-fullscreen-btn{
+    display:flex; position:absolute; top:10px; right:10px; z-index:20;
+    width:38px; height:38px; align-items:center; justify-content:center;
+    background:var(--bg-elev); border:1px solid var(--border-soft);
+    border-radius:9px; color:var(--text); cursor:pointer; padding:0;
+    box-shadow:0 4px 14px var(--shadow-med);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .map-fullscreen-btn:hover{background:var(--bg-elev-2); border-color:var(--ember); color:var(--ember);}
+  .map-fullscreen-btn svg{width:18px; height:18px;}
+  .map-card.map-fullscreen{
+    position:fixed !important; inset:0; z-index:2000; border-radius:0; margin:0;
+    display:flex; flex-direction:column;
+  }
+  .map-card.map-fullscreen #map{height:auto !important; flex:1; transition:none;}
+  body.map-fullscreen-active{overflow:hidden;}
+  .map-card.map-fs-anim{animation:mapFsIn .28s ease;}
+  .map-card.map-fs-anim-out{animation:mapFsOut .16s ease forwards;}
+  @keyframes mapFsIn{ from{opacity:.35;} to{opacity:1;} }
+  @keyframes mapFsOut{ from{opacity:1;} to{opacity:.35;} }
   .map-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 0;}
   #map{height:460px; width:100%; margin-top:16px; filter: saturate(0.85); position:relative; z-index:1; isolation:isolate;}
   .layer-toggle{display:flex; gap:6px; background:var(--bg-elev-2); padding:4px; border-radius:9px; border:1px solid var(--border);}
@@ -790,7 +812,6 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* Banner notifikasi di dalam halaman (fallback saat izin browser belum diberikan) */
   .alert-banner{
     display:none; align-items:center; gap:12px; margin-top:22px; padding:13px 18px;
     border-radius:12px; border:1px solid rgba(228,57,46,0.4); background:rgba(228,57,46,0.1);
@@ -820,30 +841,25 @@
     transition: color .15s ease, border-color .15s ease;
   }
   .back-to-top-link:hover{color:var(--text); border-bottom-color:var(--ember);}
-  .back-to-top-link svg{width:12.5px; height:12.5px;}
+  .back-to-top-link svg{width:12.5px; height:12.5px; flex-shrink:0;}
+  button.back-to-top-link{appearance:none; -webkit-appearance:none; font-family:inherit; text-align:inherit; margin:0; box-sizing:border-box;}
+  button.back-to-top-link.is-active{color:var(--ember);}
+  button.back-to-top-link.is-active svg{color:var(--ember);}
 
-  /* ===== Tombol toggle dark/light mode — underline senada back-to-top,
-     dua ikon (matahari & bulan) yang saling silang-fade & rotate saat
-     tema berpindah tetap dipertahankan. ===== */
-  .theme-toggle{
-    position:relative; display:inline-flex; align-items:center; gap:6px;
-    font-family:var(--font-mono); font-size:11.5px; color:var(--text-faint);
-    padding:4px 0 6px; border:none; border-bottom:1px solid transparent; border-radius:0;
-    background:transparent; cursor:pointer;
-    transition: color .15s ease, border-color .15s ease;
-  }
-  .theme-toggle:hover{color:var(--text); border-bottom-color:var(--ember);}
-  .theme-toggle-icon{position:relative; width:13px; height:13px; flex-shrink:0;}
-  .theme-toggle-icon svg{
-    position:absolute; inset:0; width:13px; height:13px;
+  /* ===== Tombol toggle dark/light mode (header, nav-right) — bentuk
+     bulat senada .icon-btn, isinya dua ikon (api & air) yang saling
+     silang-fade & rotate saat tema berpindah. Dark mode = ikon api
+     (menyala), light mode = ikon air (tetes). ===== */
+  .theme-toggle-btn{ position:relative; }
+  .theme-icon-wrap{position:relative; width:17px; height:17px; flex-shrink:0;}
+  .theme-icon-wrap svg{
+    position:absolute; inset:0; width:17px; height:17px;
     transition: opacity .3s ease, transform .4s cubic-bezier(.34,1.4,.64,1);
   }
-  .theme-toggle-icon .icon-sun{color:var(--ember-light); opacity:0; transform:rotate(-90deg) scale(.5);}
-  .theme-toggle-icon .icon-moon{color:#FFFFFF; opacity:1; transform:rotate(0) scale(1);}
-  html[data-theme="light"] .theme-toggle-icon .icon-sun{opacity:1; transform:rotate(0) scale(1);}
-  html[data-theme="light"] .theme-toggle-icon .icon-moon{opacity:0; transform:rotate(90deg) scale(.5);}
-  .theme-toggle-label::after{content:'Gelap';}
-  html[data-theme="light"] .theme-toggle-label::after{content:'Terang';}
+  .theme-icon-wrap .icon-fire{color:var(--ember-light); opacity:1; transform:rotate(0) scale(1);}
+  .theme-icon-wrap .icon-water{color:var(--rain); opacity:0; transform:rotate(90deg) scale(.5);}
+  html[data-theme="light"] .theme-icon-wrap .icon-fire{opacity:0; transform:rotate(-90deg) scale(.5);}
+  html[data-theme="light"] .theme-icon-wrap .icon-water{opacity:1; transform:rotate(0) scale(1);}
 
   /* ===================== MOBILE RESPONSIVE ===================== */
   @media (max-width: 768px){
@@ -879,7 +895,6 @@
        Peek row (satu baris ringkas, selalu utuh terlihat, scroll
        horizontal kalau sempit) dipisah dari detail lengkap supaya tidak
        ada teks yang terpotong vertikal saat sheet masih collapsed. --- */
-    .map-card{position:relative;}
     #map{height:min(62vh, 520px); transition:height .3s ease;}
     .map-legend{
       position:absolute; left:0; right:0; bottom:0; z-index:16;
@@ -949,29 +964,9 @@
     .leaflet-bottom.leaflet-right{
       margin:0 8px 64px 0 !important;
     }
-
-    /* --- Tombol fullscreen peta --- */
-    .map-fullscreen-btn{
-      display:flex; position:absolute; top:10px; right:10px; z-index:20;
-      width:38px; height:38px; align-items:center; justify-content:center;
-      background:var(--bg-elev); border:1px solid var(--border-soft);
-      border-radius:9px; color:var(--text); cursor:pointer; padding:0;
-      box-shadow:0 4px 14px var(--shadow-med);
-    }
-    .map-fullscreen-btn svg{width:18px; height:18px;}
-    .map-card.map-fullscreen{
-      position:fixed !important; inset:0; z-index:2000; border-radius:0; margin:0;
-      display:flex; flex-direction:column;
-    }
-    .map-card.map-fullscreen #map{height:auto !important; flex:1; transition:none;}
-    body.map-fullscreen-active{overflow:hidden;}
-    /* Peta & legend sheet di-fade bareng (legend adalah child .map-card,
-       jadi otomatis ikut opacity parent-nya) memakai durasi yang sama
-       supaya transisi masuk/keluar fullscreen terasa satu kesatuan. */
-    .map-card.map-fs-anim{animation:mapFsIn .28s ease;}
-    .map-card.map-fs-anim-out{animation:mapFsOut .16s ease forwards;}
-    @keyframes mapFsIn{ from{opacity:.35;} to{opacity:1;} }
-    @keyframes mapFsOut{ from{opacity:1;} to{opacity:.35;} }
+    /* Tombol & state fullscreen peta (.map-fullscreen-btn, .map-card.map-fullscreen,
+       dst.) sudah generik untuk semua ukuran layar — lihat definisinya di
+       dekat .map-card di luar media query ini. */
 
     .card{padding:16px;}
     .divider{margin:38px 0 0;}
@@ -982,7 +977,7 @@
        mobile supaya jempol tidak salah kena, dan turunkan sedikit
        ukuran font biar sejajar rapi dengan source-tags di atasnya. */
     .footer-actions{gap:20px;}
-    .theme-toggle, .back-to-top-link{font-size:11px; padding:6px 0 7px;}
+    .back-to-top-link{font-size:11px; padding:6px 0 7px;}
 
     /* --- Kartu & grid: jarak lebih rapat, judul tidak mepet tepi --- */
     .grid-2, .grid-3, .grid-4{ gap:12px; }
@@ -1109,8 +1104,11 @@
   </div>
   <div class="nav-right">
     <div class="live-pill"><span class="live-dot"></span><span id="nav-updated">memuat…</span></div>
-    <div class="icon-btn" id="notif-btn" title="Aktifkan notifikasi browser">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+    <div class="icon-btn theme-toggle-btn" id="theme-toggle" title="Ganti tampilan gelap/terang" aria-label="Ganti tampilan gelap/terang">
+      <span class="theme-icon-wrap">
+        <svg class="icon-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5c1.1 2.7-2.6 4.1-2.6 7.6a2.6 2.6 0 0 0 5.2 0c0-1 .5-1.7.9-2.3 1 1.4 1.9 3 1.9 5A5.4 5.4 0 0 1 6 12.8C6 7.8 10.5 6.2 12 2.5Z"/></svg>
+        <svg class="icon-water" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6.5 8 6.5 12.5a6.5 6.5 0 0 1-13 0C5.5 11 12 3 12 3Z"/><path d="M9.3 15.5a2.7 2.7 0 0 0 2.7 2.7"/></svg>
+      </span>
     </div>
   </div>
 </nav>
@@ -1155,7 +1153,6 @@
     <div class="alert-banner" id="alert-banner">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
       <span id="alert-banner-text"></span>
-      <button id="alert-banner-btn">Aktifkan notifikasi</button>
     </div>
 
     <div class="hero-grid" style="margin-top:22px;">
@@ -1459,12 +1456,9 @@
         <span class="tag">XGBoost Classifier</span>
       </div>
       <div class="footer-actions">
-        <button type="button" class="theme-toggle" id="theme-toggle" title="Ganti tampilan gelap/terang" aria-label="Ganti tampilan gelap/terang">
-          <span class="theme-toggle-icon">
-            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.8 6.8 0 0 0 10.5 10.5Z"/></svg>
-          </span>
-          <span class="theme-toggle-label"></span>
+        <button type="button" class="back-to-top-link" id="footer-notif-btn" title="Aktifkan notifikasi browser" aria-label="Aktifkan notifikasi browser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="footer-notif-label">Notifikasi</span>
         </button>
         <a href="#top" class="back-to-top-link" id="back-to-top">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -1516,11 +1510,11 @@
     try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; }
   }
 
-  /* ===== Curtain wipe dari bawah ke atas =====
+  /* ===== Curtain wipe dari atas ke bawah =====
      Pakai View Transitions API bawaan browser: browser "foto" tampilan
      lama & baru, lalu kita kontrol clip-path (inset) lewat Web Animations
-     API supaya tema baru "naik" seperti tirai dari tepi bawah layar ke
-     atas. Kalau browser belum dukung (mis. Firefox) atau reduced-motion
+     API supaya tema baru "turun" seperti tirai dari tepi atas layar ke
+     bawah. Kalau browser belum dukung (mis. Firefox) atau reduced-motion
      aktif, turun ke cross-fade lama supaya tetap mulus. */
   var revealBusy = false;
   function playCurtainWipe(theme){
@@ -1537,8 +1531,8 @@
       document.documentElement.animate(
         {
           clipPath: [
-            'inset(100% 0 0 0)',
-            'inset(0% 0 0 0)'
+            'inset(0 0 100% 0)',
+            'inset(0 0 0% 0)'
           ]
         },
         {
@@ -1849,7 +1843,7 @@ function renderHero(data){
 
   const note = document.getElementById('map-sampling-note');
   if(ews.map_points_total_grid && ews.map_points_sent && ews.map_points_sent < ews.map_points_total_grid){
-    note.textContent = `Menampilkan ${fmtNum(ews.map_points_sent)} dari ${fmtNum(ews.map_points_total_grid)} grid nasional (semua grid Waspada ke atas ditampilkan penuh, grid Aman disampel) agar peta tetap ringan.`;
+    note.textContent = `Menampilkan ${fmtNum(ews.map_points_sent)} dari ${fmtNum(ews.map_points_total_grid)} grid nasional.`;
   } else {
     note.textContent = '';
   }
@@ -2262,8 +2256,7 @@ function renderEDA(data){
     data:{
       labels,
       datasets:[
-        {label:'Q1', data: cats.map(c=>box[c]?.q1||0), backgroundColor:'transparent'},
-        {label:'Median', data: cats.map(c=>box[c]?.median||0), backgroundColor:[RAIN,SIAGA1], borderRadius:6},
+        {label:'Median', data: cats.map(c=>box[c]?.median||0), backgroundColor:[RAIN,SIAGA1], borderRadius:6, maxBarThickness:64},
       ]
     },
     options:{
@@ -2375,10 +2368,10 @@ function renderRealtime(data){
 /* ---------------- NOTIFIKASI BROWSER ---------------- */
 function checkAndNotify(data){
   const siaga1 = data.ews?.status_summary?.['SIAGA 1 (Sangat Bahaya)'] || 0;
-  const btn = document.getElementById('notif-btn');
   const banner = document.getElementById('alert-banner');
   const bannerText = document.getElementById('alert-banner-text');
-  const bannerBtn = document.getElementById('alert-banner-btn');
+  const footerBtn = document.getElementById('footer-notif-btn');
+  const footerLabel = document.getElementById('footer-notif-label');
 
   if(!('Notification' in window)) return;
 
@@ -2391,32 +2384,32 @@ function checkAndNotify(data){
     });
   }
 
-  function updateBtnState(){
-    if(Notification.permission === 'granted') btn.classList.add('notif-on');
-    else btn.classList.remove('notif-on');
+  function syncFooterBtnState(){
+    const granted = Notification.permission === 'granted';
+    footerBtn.classList.toggle('is-active', granted);
+    footerBtn.title = granted ? 'Notifikasi browser aktif' : 'Aktifkan notifikasi browser';
   }
-  updateBtnState();
+  syncFooterBtnState();
 
   if(siaga1 > 0){
     if(Notification.permission === 'granted'){
       fireNotification();
     } else if(Notification.permission !== 'denied'){
-      bannerText.innerHTML = `<b>${siaga1} grid SIAGA 1</b> terdeteksi hari ini secara nasional. Aktifkan notifikasi browser supaya kamu langsung tahu saat data harian diperbarui.`;
+      bannerText.innerHTML = `<b>${siaga1} grid SIAGA 1</b> terdeteksi hari ini secara nasional. Aktifkan notifikasi browser (tombol "Notifikasi" di footer) supaya kamu langsung tahu saat data harian diperbarui.`;
       banner.classList.add('show');
     }
   }
 
-  const requestPerm = ()=>{
+  footerBtn.onclick = ()=>{
+    if(Notification.permission === 'granted'){ syncFooterBtnState(); return; }
     Notification.requestPermission().then(perm=>{
-      updateBtnState();
+      syncFooterBtnState();
       if(perm === 'granted'){
         banner.classList.remove('show');
         fireNotification();
       }
     });
   };
-  btn.onclick = requestPerm;
-  bannerBtn.onclick = requestPerm;
 }
 
 /* ---------------- SCROLL REVEAL TRANSITION ---------------- */
