@@ -1,0 +1,45 @@
+name: Update Karhutla EWS data
+
+on:
+  schedule:
+    # Setiap 3 jam (UTC) -- delay 1 jam s/d 1 hari
+    # sama-sama masih relevan untuk pemantauan karhutla, jadi 3 jam sekali
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}   # tombol "Run workflow" manual di tab Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt requests
+
+      - name: Jalankan pipeline update data
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: python scripts/run_update.py
+
+      - name: Commit & push kalau ada perubahan data
+        run: |
+          git config user.name "karhutla-ews-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/dashboard_data.json data/fire_realtime_14d.csv data/gpm_realtime_recent.parquet 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan data, skip commit."
+          else
+            git commit -m "chore: auto-update dashboard data [skip ci]"
+            git push
+          fi

@@ -83,7 +83,11 @@ const DEMO_DATA = {
     coverage: "Indonesia (Nasional)"
   },
   model: {
-    auc_roc: .912,
+    auc_roc: .946,
+    pr_auc: .13,
+    pr_auc_baseline: .006,
+    decision_threshold: .932,
+    class_balance_note: "Ini DATA DEMO (bukan hasil model asli) -- ditampilkan hanya karena dashboard_data.json gagal dimuat.",
     confusion_matrix: [ [ 3210, 184 ], [ 201, 1405 ] ],
     roc_curve: {
       fpr: [ 0, .02, .05, .09, .15, .25, .4, .6, 1 ],
@@ -91,18 +95,18 @@ const DEMO_DATA = {
     },
     classification_report: {
       "Tidak Terbakar": {
-        precision: .941,
-        recall: .946,
-        "f1-score": .943,
-        support: 3394
+        precision: .996,
+        recall: .988,
+        "f1-score": .992,
+        support: 932806
       },
       Terbakar: {
-        precision: .884,
-        recall: .875,
-        "f1-score": .879,
-        support: 1606
+        precision: .151,
+        recall: .368,
+        "f1-score": .214,
+        support: 5594
       },
-      accuracy: .923
+      accuracy: .984
     },
     feature_importance: [ {
       feature: "precip_roll7",
@@ -420,6 +424,17 @@ function animateCountUp(el, targetValue, formatFn, duration) {
   requestAnimationFrame(tick);
 }
 
+function showDemoDataBanner() {
+  if (document.getElementById("demo-data-banner")) return;
+  const banner = document.createElement("div");
+  banner.id = "demo-data-banner";
+  banner.setAttribute("role", "alert");
+  banner.style.cssText = "position:sticky;top:0;z-index:9999;background:#B33A2E;color:#fff;" +
+    "font-size:.85rem;font-weight:600;text-align:center;padding:8px 12px;";
+  banner.textContent = "⚠️ dashboard_data.json gagal dimuat — dashboard ini sedang menampilkan DATA DEMO (contoh), bukan data nyata.";
+  document.body.prepend(banner);
+}
+
 async function loadData() {
   try {
     const res = await fetch("/dashboard_data.json", {
@@ -429,6 +444,7 @@ async function loadData() {
     return await res.json();
   } catch (e) {
     console.warn("dashboard_data.json tidak ditemukan, memakai data demo.", e);
+    showDemoDataBanner();
     return DEMO_DATA;
   }
 }
@@ -1207,6 +1223,17 @@ function renderModel(data) {
   repHtml += "</div>";
   if (rep.accuracy !== undefined) {
     repHtml += `<div class="metric-row" style="margin-top:6px;"><span class="mname">Akurasi keseluruhan</span><span class="mval" style="color:var(--ember);">${(rep.accuracy * 100).toFixed(1)}%</span></div>`;
+  }
+  if (data.model?.pr_auc !== undefined) {
+    const prAuc = data.model.pr_auc;
+    const baseline = data.model.pr_auc_baseline ?? 0;
+    repHtml += `<div class="metric-row"><span class="mname">PR-AUC (vs baseline ${(baseline * 100).toFixed(2)}%)</span><span class="mval" style="color:var(--ember);">${prAuc.toFixed(3)}</span></div>`;
+  }
+  if (data.model?.decision_threshold !== undefined) {
+    repHtml += `<div class="metric-row"><span class="mname">Ambang keputusan (F2, prioritas recall)</span><span class="mval" style="color:var(--ember);">${data.model.decision_threshold.toFixed(3)}</span></div>`;
+  }
+  if (data.model?.class_balance_note) {
+    repHtml += `<p class="clsf-note" style="margin-top:10px; font-size:.82rem; line-height:1.5; color:var(--text-faint);">⚠️ ${data.model.class_balance_note}</p>`;
   }
   document.getElementById("classification-report").innerHTML = repHtml;
   const imp = (data.model?.feature_importance || []).slice().sort((a, b) => a.importance - b.importance);
