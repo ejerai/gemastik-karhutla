@@ -12,6 +12,8 @@ request tetap kecil.
 Output: data/gpm_realtime_recent.parquet -- dipakai generate_dashboard_data.py
 sebagai "tambalan" data terkini di atas arsip data/gpm_indonesia_combined.parquet.
 
+Jalankan:
+  python scripts/fetch_rainfall_openmeteo.py
 """
 from __future__ import annotations
 
@@ -242,11 +244,16 @@ def main() -> None:
         old_data["acq_date"] = pd.to_datetime(old_data["acq_date"])
         old_data["lat"] = old_data["lat"].astype("float64").round(2)
         old_data["lon"] = old_data["lon"].astype("float64").round(2)
-        # Gabung: baris hasil fetch BARU menang kalau ada kombinasi
-        # (lat, lon, acq_date) yang sama; baris LAMA dipertahankan untuk
-        # kombinasi yang tidak berhasil di-fetch ulang kali ini.
-        merged = pd.concat([old_data, combined], ignore_index=True)
-        merged = merged.drop_duplicates(subset=["lat", "lon", "acq_date"], keep="last")
+        if len(combined) > 0:
+            # Gabung: baris hasil fetch BARU menang kalau ada kombinasi
+            # (lat, lon, acq_date) yang sama; baris LAMA dipertahankan untuk
+            # kombinasi yang tidak berhasil di-fetch ulang kali ini.
+            merged = pd.concat([old_data, combined], ignore_index=True)
+            merged = merged.drop_duplicates(subset=["lat", "lon", "acq_date"], keep="last")
+        else:
+            # Semua batch gagal -- tidak ada yang perlu digabung, data lama
+            # dipakai apa adanya (hindari FutureWarning pd.concat dgn frame kosong).
+            merged = old_data
     else:
         merged = combined
 
@@ -255,8 +262,16 @@ def main() -> None:
         raise SystemExit(1)
 
     n_cells_final = merged[["lat", "lon"]].drop_duplicates().shape[0]
-    log(f"  Cakupan grid setelah digabung dengan fallback: {n_cells_final:,} dari "
-        f"{len(points):,} sel target ({n_cells_final/len(points)*100:.1f}%)")
+    n_cells_this_shard = merged.merge(
+        pd.DataFrame(points, columns=["lat", "lon"]), on=["lat", "lon"]
+    )[["lat", "lon"]].drop_duplicates().shape[0]
+    # Dibandingkan terhadap TOTAL grid darat nasional (all_points), bukan cuma
+    # target shard run ini -- merged berisi akumulasi dari semua shard yang
+    # pernah berhasil di run-run sebelumnya, jadi itu acuan yang benar.
+    log(f"  Cakupan shard ini setelah fallback: {n_cells_this_shard:,} dari "
+        f"{len(points):,} sel target shard ({n_cells_this_shard/max(1,len(points))*100:.1f}%)")
+    log(f"  Cakupan grid darat NASIONAL (akumulasi semua shard sejauh ini): "
+        f"{n_cells_final:,} dari {len(all_points):,} sel ({n_cells_final/len(all_points)*100:.1f}%)")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     merged.to_parquet(OUT_PATH, index=False)
