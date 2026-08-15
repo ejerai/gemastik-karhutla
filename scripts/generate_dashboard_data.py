@@ -149,13 +149,25 @@ def load_raw():
         log(f"  tambalan realtime GPM ditemukan: {len(rt_gpm):,} baris "
             f"({rt_gpm.acq_date.min().date()} s/d {rt_gpm.acq_date.max().date()}) -- digabung ke arsip")
 
+    n_before = gpm[["lat_grid", "lon_grid"]].drop_duplicates().shape[0]
+    try:
+        from global_land_mask import globe
+        is_land = globe.is_land(gpm["lat_grid"].to_numpy(), gpm["lon_grid"].to_numpy())
+        gpm = gpm[is_land].reset_index(drop=True)
+        n_after = gpm[["lat_grid", "lon_grid"]].drop_duplicates().shape[0]
+        log(f"  filter darat  : {n_after:,} dari {n_before:,} sel grid ({n_after/n_before*100:.1f}%) "
+            f"-- sel laut dibuang (curah hujan di tengah laut tidak relevan buat risiko karhutla)")
+    except ImportError:
+        log("  PERINGATAN: paket 'global-land-mask' tidak terpasang, grid TIDAK difilter "
+            "ke darat. Jalankan: pip install global-land-mask")
+
     log(f"  fire historis : {len(fire_hist):,} baris "
         f"({fire_hist.acq_date.min().date()} s/d {fire_hist.acq_date.max().date()})")
     log(f"  fire realtime : {len(fire_rt):,} baris "
         f"({fire_rt.acq_date.min().date()} s/d {fire_rt.acq_date.max().date()})")
     log(f"  grid GPM      : {len(gpm):,} baris, "
-        f"{gpm.lat_grid.nunique()}x{gpm.lon_grid.nunique()} sel, "
-        f"{gpm.acq_date.nunique()} tanggal, seluruh Indonesia "
+        f"{gpm.lat_grid.nunique()}x{gpm.lon_grid.nunique()} sel unik lat/lon, "
+        f"{gpm.acq_date.nunique()} tanggal, seluruh Indonesia (darat saja) "
         f"(lat {gpm.lat_grid.min():.2f}..{gpm.lat_grid.max():.2f}, "
         f"lon {gpm.lon_grid.min():.2f}..{gpm.lon_grid.max():.2f})")
     return fire_hist, fire_rt, gpm

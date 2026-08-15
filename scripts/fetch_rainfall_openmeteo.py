@@ -83,14 +83,34 @@ def log(msg: str) -> None:
 
 def build_grid_points() -> list[tuple[float, float]]:
     """Pakai grid persis dari parquet historis kalau ada (biar identik),
-    fallback bikin grid baru kalau file historis belum ada."""
+    fallback bikin grid baru kalau file historis belum ada. Grid difilter ke
+    sel DARAT saja -- grid GPM mentah adalah kotak persegi (bounding box)
+    yang ~76% isinya laut (curah hujan di tengah laut tidak relevan buat
+    risiko karhutla, dan cuma buang-buang kuota API). Filter pakai paket
+    global-land-mask (data land/sea sudah ter-bundle offline, tidak perlu
+    internet saat runtime)."""
     if BASE_PARQUET.exists():
         base = pd.read_parquet(BASE_PARQUET, columns=["lat", "lon"])
         pts = base.drop_duplicates()[["lat", "lon"]].astype("float64").round(2)
-        return list(pts.itertuples(index=False, name=None))
-    lats = np.round(np.arange(LAT_MIN, LAT_MAX + 1e-6, GRID_STEP), 2)
-    lons = np.round(np.arange(LON_MIN, LON_MAX + 1e-6, GRID_STEP), 2)
-    return [(float(la), float(lo)) for la in lats for lo in lons]
+    else:
+        lats = np.round(np.arange(LAT_MIN, LAT_MAX + 1e-6, GRID_STEP), 2)
+        lons = np.round(np.arange(LON_MIN, LON_MAX + 1e-6, GRID_STEP), 2)
+        pts = pd.DataFrame(
+            [(la, lo) for la in lats for lo in lons], columns=["lat", "lon"]
+        )
+
+    n_before = len(pts)
+    try:
+        from global_land_mask import globe
+        is_land = globe.is_land(pts["lat"].to_numpy(), pts["lon"].to_numpy())
+        pts = pts[is_land]
+        log(f"  Filter darat: {len(pts):,} dari {n_before:,} sel ({len(pts)/n_before*100:.1f}%) "
+            f"-- sel laut dibuang, tidak relevan buat risiko karhutla.")
+    except ImportError:
+        log("  PERINGATAN: paket 'global-land-mask' tidak terpasang, grid TIDAK difilter "
+            "ke darat (masih termasuk ~76% sel laut). Jalankan: pip install global-land-mask")
+
+    return list(pts.itertuples(index=False, name=None))
 
 
 def fetch_batch(points: list[tuple[float, float]], session: requests.Session) -> pd.DataFrame:
