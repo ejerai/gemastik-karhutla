@@ -5,11 +5,6 @@ Input (folder ./data, relatif terhadap script ini):
   - fire_realtime_14d.csv           -> hotspot FIRMS 14 hari terakhir (near real-time)
   - gpm_indonesia_combined.parquet  -> grid curah hujan harian GPM IMERG, 0.1°, nasional
 
-Output:
-  - ../public/dashboard_data.json
-
-Jalankan:
-  python scripts/generate_dashboard_data.py
 """
 from __future__ import annotations
 

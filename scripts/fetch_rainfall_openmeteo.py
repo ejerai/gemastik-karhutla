@@ -12,8 +12,6 @@ request tetap kecil.
 Output: data/gpm_realtime_recent.parquet -- dipakai generate_dashboard_data.py
 sebagai "tambalan" data terkini di atas arsip data/gpm_indonesia_combined.parquet.
 
-Jalankan:
-  python scripts/fetch_rainfall_openmeteo.py
 """
 from __future__ import annotations
 
