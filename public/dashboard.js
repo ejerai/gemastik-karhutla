@@ -475,7 +475,7 @@ function renderAll(data) {
   applyChartTheme();
 }
 
-let _navUpdatedAt = null; // Date object dari meta.generated_at, dipakai timer relative-time
+let _navUpdatedAt = null; 
 
 function formatRelativeID(deltaMs) {
   const sec = Math.floor(deltaMs / 1000);
@@ -1404,6 +1404,19 @@ navAnchors.forEach(a => {
 });
 
 const hrefs = [ ...hrefToSection.keys() ];
+
+const HEADER_OFFSET = 100;
+
+navAnchors.forEach(a => {
+  a.addEventListener("click", (e) => {
+    const href = a.getAttribute("href");
+    const target = hrefToSection.get(href);
+    if (!target) return;
+    e.preventDefault();
+    const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+    window.scrollTo({ top, behavior: "smooth" });
+  });
+});
 
 window.addEventListener("scroll", () => {
   let activeHref = hrefs[0];
