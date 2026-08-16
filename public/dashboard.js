@@ -499,7 +499,7 @@ function tickNavUpdated() {
   const deltaMs = Date.now() - _navUpdatedAt.getTime();
   const deltaHours = deltaMs / 3_600_000;
   const abs = _navUpdatedAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
-  el.textContent = `${abs} · ${formatRelativeID(deltaMs)}`;
+  el.textContent = abs;
   // Indikator kesegaran: cron jalan tiap ~3 jam, jadi <6 jam = normal, 6-24 jam =
   // agak telat (mis. rate-limit sementara), >24 jam = benar-benar basi.
   if (dot) {
