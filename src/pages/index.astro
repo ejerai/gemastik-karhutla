@@ -172,6 +172,11 @@
         <p class="section-desc">Grid spasial 0.1° (~11km) di seluruh Indonesia. Klik titik untuk detail probabilitas risiko & curah hujan.</p>
       </div>
       <div class="map-toolbar">
+        <form class="coord-search" id="coord-search" autocomplete="off">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="coord-search-input" placeholder="Cari koordinat, mis. -1.5, 118.0" inputmode="decimal" />
+          <button type="submit">Cari</button>
+        </form>
         <div class="region-select" id="region-filter">
           <button type="button" class="region-select-trigger" id="region-filter-trigger">
             <span class="region-select-trigger-dot"></span>

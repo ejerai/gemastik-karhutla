@@ -475,7 +475,7 @@ function renderAll(data) {
   applyChartTheme();
 }
 
-let _navUpdatedAt = null; 
+let _navUpdatedAt = null;
 
 function formatRelativeID(deltaMs) {
   const sec = Math.floor(deltaMs / 1000);
@@ -500,12 +500,10 @@ function tickNavUpdated() {
   const deltaHours = deltaMs / 3_600_000;
   const abs = _navUpdatedAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
   el.textContent = abs;
-  // Indikator kesegaran: cron jalan tiap ~3 jam, jadi <6 jam = normal, 6-24 jam =
-  // agak telat (mis. rate-limit sementara), >24 jam = benar-benar basi.
   if (dot) {
-    let color = "#5fd98a"; // safe/hijau
-    if (deltaHours >= 24) color = "#ef5350"; // danger/merah
-    else if (deltaHours >= 6) color = "#f2b84b"; // warn/kuning
+    let color = "#5fd98a"; 
+    if (deltaHours >= 24) color = "#ef5350"; 
+    else if (deltaHours >= 6) color = "#f2b84b";
     dot.style.background = color;
     dot.style.boxShadow = `0 0 0 3px ${color}2e`;
   }
@@ -515,8 +513,6 @@ function renderNav(data) {
   const t = data.meta?.generated_at || data.realtime?.last_updated;
   _navUpdatedAt = t ? new Date(t) : null;
   tickNavUpdated();
-  // Update tampilan waktu relatif tiap 60 detik selama tab tetap terbuka --
-  // supaya "X menit/jam lalu" selalu akurat tanpa perlu reload manual.
   if (!window._navUpdatedInterval) {
     window._navUpdatedInterval = setInterval(tickNavUpdated, 60_000);
   }
@@ -1394,7 +1390,84 @@ function checkAndNotify(data) {
   revealEls.forEach(el => io.observe(el));
 })();
 
-const navAnchors = document.querySelectorAll(".nav-links a, .bn-link");
+// pencarian koordinat di peta 
+let SEARCH_MARKER = null;
+
+function parseCoordInput(raw) {
+  const cleaned = raw.trim().replace(/[;|]/g, ",");
+  const parts = cleaned.split(/[,\s]+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  const lat = parseFloat(parts[0]);
+  const lon = parseFloat(parts[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return { lat, lon };
+}
+
+function findNearestGridPoint(lat, lon) {
+  const points = CURRENT_DATA?.ews?.map_points || [];
+  let best = null;
+  let bestDist = Infinity;
+  for (const p of points) {
+    const d = Math.hypot(p.lat - lat, p.lon - lon);
+    if (d < bestDist) {
+      bestDist = d;
+      best = p;
+    }
+  }
+  return bestDist <= 0.12 ? best : null;
+}
+
+function runCoordSearch() {
+  const form = document.getElementById("coord-search");
+  const input = document.getElementById("coord-search-input");
+  if (!form || !input) return;
+  const coord = parseCoordInput(input.value);
+  form.classList.remove("invalid");
+  if (!coord) {
+    form.classList.add("invalid");
+    return;
+  }
+  if (!LEAFLET_MAP) return; 
+
+  if (SEARCH_MARKER) {
+    LEAFLET_MAP.removeLayer(SEARCH_MARKER);
+    SEARCH_MARKER = null;
+  }
+
+  const nearest = findNearestGridPoint(coord.lat, coord.lon);
+  const popupHtml = nearest
+    ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text);">
+        <b>${coord.lat.toFixed(3)}, ${coord.lon.toFixed(3)}</b><br>
+        Sel grid terdekat: ${nearest.lat.toFixed(2)}, ${nearest.lon.toFixed(2)} · ${nearest.region || "-"}<br>
+        Risiko: <b>${(nearest.risk_score * 100).toFixed(0)}%</b> · ${nearest.status}<br>
+        Curah hujan: ${nearest.precip_mm ?? "-"} mm</div>`
+    : `<div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text);">
+        <b>${coord.lat.toFixed(3)}, ${coord.lon.toFixed(3)}</b><br>
+        Tidak ada data grid di dekat titik ini pada tampilan saat ini.</div>`;
+
+  SEARCH_MARKER = L.circleMarker([coord.lat, coord.lon], {
+    radius: 9,
+    color: "#FFB454",
+    weight: 2,
+    fillColor: "#FF7A33",
+    fillOpacity: .55,
+    className: "coord-search-marker"
+  }).addTo(LEAFLET_MAP).bindPopup(popupHtml).openPopup();
+
+  LEAFLET_MAP.flyTo([coord.lat, coord.lon], Math.max(LEAFLET_MAP.getZoom(), 9), { duration: .8 });
+}
+
+(function initCoordSearch() {
+  const form = document.getElementById("coord-search");
+  const input = document.getElementById("coord-search-input");
+  if (!form || !input) return;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runCoordSearch();
+  });
+  input.addEventListener("input", () => form.classList.remove("invalid"));
+})();
 
 const hrefToSection = new Map;
 
@@ -1405,13 +1478,13 @@ navAnchors.forEach(a => {
 
 const hrefs = [ ...hrefToSection.keys() ];
 
-const HEADER_OFFSET = 100;
+const HEADER_OFFSET = 100; 
 
 navAnchors.forEach(a => {
   a.addEventListener("click", (e) => {
     const href = a.getAttribute("href");
     const target = hrefToSection.get(href);
-    if (!target) return;
+    if (!target) return; 
     e.preventDefault();
     const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
     window.scrollTo({ top, behavior: "smooth" });
