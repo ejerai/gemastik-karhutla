@@ -475,12 +475,51 @@ function renderAll(data) {
   applyChartTheme();
 }
 
+let _navUpdatedAt = null; // Date object dari meta.generated_at, dipakai timer relative-time
+
+function formatRelativeID(deltaMs) {
+  const sec = Math.floor(deltaMs / 1000);
+  if (sec < 60) return "baru saja";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} menit lalu`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} jam lalu`;
+  const day = Math.floor(hr / 24);
+  return `${day} hari lalu`;
+}
+
+function tickNavUpdated() {
+  const el = document.getElementById("nav-updated");
+  const dot = document.querySelector(".live-dot");
+  if (!el) return;
+  if (!_navUpdatedAt) {
+    el.textContent = "live";
+    return;
+  }
+  const deltaMs = Date.now() - _navUpdatedAt.getTime();
+  const deltaHours = deltaMs / 3_600_000;
+  const abs = _navUpdatedAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+  el.textContent = `${abs} · ${formatRelativeID(deltaMs)}`;
+  // Indikator kesegaran: cron jalan tiap ~3 jam, jadi <6 jam = normal, 6-24 jam =
+  // agak telat (mis. rate-limit sementara), >24 jam = benar-benar basi.
+  if (dot) {
+    let color = "#5fd98a"; // safe/hijau
+    if (deltaHours >= 24) color = "#ef5350"; // danger/merah
+    else if (deltaHours >= 6) color = "#f2b84b"; // warn/kuning
+    dot.style.background = color;
+    dot.style.boxShadow = `0 0 0 3px ${color}2e`;
+  }
+}
+
 function renderNav(data) {
   const t = data.meta?.generated_at || data.realtime?.last_updated;
-  document.getElementById("nav-updated").textContent = t ? new Date(t).toLocaleString("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }) : "live";
+  _navUpdatedAt = t ? new Date(t) : null;
+  tickNavUpdated();
+  // Update tampilan waktu relatif tiap 60 detik selama tab tetap terbuka --
+  // supaya "X menit/jam lalu" selalu akurat tanpa perlu reload manual.
+  if (!window._navUpdatedInterval) {
+    window._navUpdatedInterval = setInterval(tickNavUpdated, 60_000);
+  }
 }
 
 function renderHero(data) {
