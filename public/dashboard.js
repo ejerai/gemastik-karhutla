@@ -1334,7 +1334,10 @@ function renderModel(data) {
     repHtml += `<div class="metric-row"><span class="mname">Ambang keputusan (F2, prioritas recall)</span><span class="mval" style="color:var(--ember);">${data.model.decision_threshold.toFixed(3)}</span></div>`;
   }
   if (data.model?.class_balance_note) {
-    repHtml += `<p class="clsf-note" style="margin-top:10px; font-size:.82rem; line-height:1.5; color:var(--text-faint);">⚠️ ${data.model.class_balance_note}</p>`;
+    repHtml += `<div class="clsf-note-wrap" tabindex="0">
+      <span class="clsf-note-trigger">⚠️ Kenapa akurasi tinggi meski model belum sempurna?</span>
+      <div class="clsf-note-tooltip">⚠️ ${data.model.class_balance_note}</div>
+    </div>`;
   }
   document.getElementById("classification-report").innerHTML = repHtml;
   const imp = (data.model?.feature_importance || []).slice().sort((a, b) => a.importance - b.importance);
