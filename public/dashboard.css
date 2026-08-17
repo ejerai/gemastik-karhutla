@@ -1,5 +1,6 @@
 /* Dashboard CSS Three Body Problem GEMASTIK */
-.topnav-outer{
+  /* navbar atas */
+  .topnav-outer{
     position: sticky; top:0; z-index: 100;
     display:flex; justify-content:center;
     padding: 14px 20px 0;
@@ -68,6 +69,7 @@
   .icon-btn:hover{color:var(--text); border-color:var(--hairline-hover); background:var(--hover-tint);}
   .icon-btn svg{width:14px; height:14px;}
 
+  /* bottom nav (mobile) */
   .bottom-nav{
     display:none;
     position:fixed; left:14px; right:14px; bottom:14px;
@@ -106,6 +108,7 @@
     .nav-links{display:none;}
   }
 
+  /* layout & section umum */
   .wrap{max-width:1360px; margin:0 auto; padding: 0 28px 80px;}
   section{padding-top:52px; scroll-margin-top:86px;}
   .section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:20px; flex-wrap:wrap;}
@@ -121,6 +124,7 @@
   h2{font-family:var(--font-display); font-size:23px; font-weight:600; letter-spacing:-0.01em;}
   .section-desc{color:var(--text-dim); font-size:13.5px; max-width:560px; margin-top:6px;}
 
+  /* card dasar */
   .card{
     background: linear-gradient(180deg, var(--bg-elev), var(--card-grad-2));
     border:1px solid var(--border); border-radius: var(--radius); padding:20px;
@@ -130,6 +134,7 @@
   .card-title svg{width:15px; height:15px; color:var(--ember); flex-shrink:0;}
   .card-sub{font-size:12px; color:var(--text-faint); margin-top:2px; font-family:var(--font-mono);}
 
+  /* hero section */
   .hero{padding-top:36px;}
   .hero-grid{display:grid; grid-template-columns: 1.15fr 1fr; gap:18px;}
   @media(max-width:980px){.hero-grid{grid-template-columns:1fr;}}
@@ -144,6 +149,7 @@
   .hero-info-desc{color:var(--text-dim); font-size:13px; line-height:1.6; max-width:320px;}
   .hero-status-badge{display:inline-flex; align-items:center; gap:7px; margin-top:14px; border-radius:999px; font-size:12px; font-weight:600; font-family:var(--font-mono);}
 
+  /* kpi cards */
   .kpi-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   .kpi{padding:18px;}
   .kpi-top{display:flex; align-items:center; justify-content:space-between;}
@@ -152,6 +158,7 @@
   .kpi-value{font-family:var(--font-display); font-size:26px; font-weight:700; margin-top:14px; letter-spacing:-0.01em;}
   .kpi-label{font-size:12px; color:var(--text-dim); margin-top:3px;}
 
+  /* grid layout & chart box */
   .grid-2{display:grid; grid-template-columns:1.3fr 1fr; gap:16px;}
   .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
   .grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
@@ -174,6 +181,7 @@
     #proyeksi .grid-2 .card:nth-child(1) .chart-box.tall{ min-height:320px; }
   }
 
+  /* tabel scroll wrapper */
   .tbl-scroll{
     max-height:320px; overflow-y:auto; overscroll-behavior:contain;
     scrollbar-width:thin; scrollbar-color: var(--bg-elev-2) transparent;
@@ -186,6 +194,7 @@
     #proyeksi .grid-2 .card:nth-child(2) > div:last-child.tbl-scroll{ justify-content:flex-start; }
   }
 
+  /* peta: card & tombol fullscreen */
   .map-card{padding:0; overflow:hidden; position:relative;}
 
   .map-fullscreen-btn{
@@ -203,13 +212,19 @@
     top:0 !important; right:0 !important; bottom:0 !important; left:0 !important;
     width:100vw !important; height:100vh !important; height:100dvh !important;
     max-width:none !important; max-height:none !important;
-    z-index:2000; border-radius:0 !important; margin:0 !important;
+    z-index:2000; border-radius:0 !important; margin:0 !important; padding:0 !important;
     border:none !important; box-sizing:border-box;
     display:flex; flex-direction:column;
   }
+  .map-card.map-fullscreen .coord-search-overlay{
+    top: max(16px, calc(env(safe-area-inset-top) + 10px));
+    left: max(16px, calc(env(safe-area-inset-left) + 10px));
+    right: max(16px, calc(env(safe-area-inset-right) + 10px));
+  }
   .map-card.map-fullscreen #map{height:auto !important; flex:1; transition:none;}
   body.map-fullscreen-active{overflow:hidden;}
-  /* peta */
+
+  /* peta: kunci scroll & matikan animasi reveal saat fullscreen */
   body.map-fullscreen-active .reveal-on-scroll{
     transform:none !important;
     will-change:auto !important;
@@ -222,6 +237,7 @@
   #map{height:460px; width:100%; filter: saturate(0.85); position:relative; z-index:1; isolation:isolate;}
 
   html[data-theme="light"] #map{filter:none;}
+  /* peta: search koordinat */
   .coord-search-overlay{
     position:absolute; top:16px; left:16px; z-index:1500; width:min(320px, calc(100% - 32px));
     opacity:0; transform:translateY(-10px) scale(.98); pointer-events:none;
@@ -243,7 +259,7 @@
   }
   .coord-search:focus-within{border-color:var(--ember); box-shadow:0 8px 24px var(--shadow-med), 0 0 0 3px rgba(255,122,51,0.18);}
   .coord-search svg{flex-shrink:0; color:var(--text-faint); transition:color .2s ease;}
-  .coord-search:focus-within svg:first-child{color:var(--ember);}
+  .coord-search:focus-within svg:first-child{color:#fdad7d;}
   .coord-search button svg{color:#fff;}
   .coord-search input{
     background:none; border:none; outline:none; color:var(--text);
@@ -265,6 +281,7 @@
     75%{ transform:translateX(4px); }
   }
 
+  /* peta: dropdown saran koordinat */
   .coord-suggest{
     margin-top:8px; overflow-x:hidden; overflow-y:hidden;
     background: linear-gradient(155deg, var(--glass-a-strong), var(--glass-b-strong));
@@ -282,6 +299,10 @@
   .coord-suggest.open{max-height:280px; opacity:1; overflow-y:auto;}
   @media (min-width:701px){
     .coord-suggest.open{max-height:420px;}
+    /* desktop fullscreen: perpanjang daftar saran sampai dekat tepi bawah layar */
+    .map-card.map-fullscreen .coord-suggest.open{
+      max-height: calc(100dvh - 110px);
+    }
   }
   .coord-suggest-label{
     position:sticky; top:0; z-index:1;
@@ -290,6 +311,7 @@
     background: linear-gradient(155deg, var(--glass-a-strong), var(--glass-b-strong));
     backdrop-filter: blur(20px) saturate(170%);
     -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border-radius: 14px 14px 0 0;
   }
   .coord-suggest-item{
     display:flex; align-items:center; gap:10px; width:100%;
@@ -310,6 +332,7 @@
   @media (max-width:700px){
     /* Search box  */
     .coord-search-overlay{left:12px; right:12px; top:16px; width:auto;}
+    .coord-suggest-label{display:none;}
 
     .map-card.map-fullscreen .map-fullscreen-btn{
       top:auto; left:auto; right:8px; bottom:84px;
@@ -319,12 +342,14 @@
     .map-card.map-fullscreen .map-fullscreen-btn svg{width:16px; height:16px;}
   }
 
+  /* peta: toggle layer */
   .layer-toggle{display:flex; gap:6px; background:var(--bg-elev-2); padding:4px; border-radius:9px; border:1px solid var(--border);}
   .layer-toggle button{
     font-family:var(--font-mono); font-size:11.5px; padding:7px 12px; border-radius:6px; color:var(--text-dim); background:transparent; border:none; cursor:pointer; transition:.15s;
   }
   .layer-toggle button.active{background:var(--ember); color:var(--bg); font-weight:600;}
 
+  /* peta: filter wilayah (dropdown) */
   .region-select{position:relative; z-index:900;}
   .region-select-trigger{
     display:flex; align-items:center; gap:8px;
@@ -413,6 +438,7 @@
   }
   .region-option.selected .check{opacity:1 !important; transform:scale(1);}
 
+  /* peta: backdrop dropdown wilayah */
   .region-select-backdrop{
     position:fixed; inset:0; z-index:99998; background:rgba(6,9,7,0.55);
     backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
@@ -420,6 +446,7 @@
   }
   .region-select-backdrop.open{opacity:1; pointer-events:auto;}
 
+  /* peta: filter wilayah versi bottom sheet (mobile) */
   .region-select-panel.sheet{
     position:fixed; top:auto; right:0; bottom:0; left:0;
     width:100%; max-width:100%; min-width:0;
@@ -437,6 +464,7 @@
   .region-select-panel.sheet .region-option{padding:12px 10px; font-size:14px;}
   .map-toolbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; position:relative; z-index:950;}
 
+  /* peta: legend */
   .map-legend{
     display:flex; gap:22px; align-items:center; padding:14px 20px;
     border-top:1px solid var(--border-soft); flex-wrap:wrap;
@@ -474,6 +502,7 @@
   .leaflet-popup-content-wrapper{background:var(--bg-elev); border-radius:10px; color:var(--text);}
   .leaflet-popup-tip{background:var(--bg-elev);}
 
+  /* peta: kontrol zoom leaflet */
   .leaflet-control-zoom{
     border:none !important; box-shadow:none !important;
     display:flex; flex-direction:column; gap:4px;
@@ -495,6 +524,7 @@
 
   .leaflet-control-attribution{ display:none !important; }
 
+  /* tabel data */
   table{width:100%; border-collapse:collapse; font-size:12.5px;}
   th{text-align:center; vertical-align:middle; font-family:var(--font-mono); font-weight:500; color:var(--text-faint); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; padding:9px 10px; border-bottom:1px solid var(--border); white-space:nowrap;}
   td{padding:10px 10px; border-bottom:1px solid var(--border-soft); font-family:var(--font-mono); color:var(--text-dim); text-align:center; vertical-align:middle; white-space:nowrap;}
@@ -508,6 +538,7 @@
   }
   .status-chip{display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:600; font-family:var(--font-mono); white-space:nowrap; line-height:1.3;}
 
+  /* footer */
   .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:56px 0 0;}
   .footer{margin-top:56px; padding-top:26px; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px;}
   .footer-note{font-size:12px; color:var(--text-faint); max-width:520px; line-height:1.7;}
@@ -516,6 +547,7 @@
   .tag{font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim); border:1px solid var(--border); padding:5px 10px; border-radius:7px;}
   .loading-note{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); text-align:center; padding:40px;}
 
+  /* hint scroll tabel (mobile) */
   .tbl-scroll-hint{
     display:none; align-items:center; gap:5px;
     font-family:var(--font-mono); font-size:10px; color:var(--text-faint);
@@ -524,6 +556,7 @@
   .hint-arrow{display:inline-block; font-size:11px; line-height:1; animation: hintNudge 1.6s ease-in-out infinite;}
   @keyframes hintNudge{ 0%,100%{ transform:translateX(0); opacity:.7; } 50%{ transform:translateX(3px); opacity:1; } }
 
+  /* animasi scroll-reveal */
   .reveal-on-scroll{
     opacity:0;
     transform: translateY(42px);
@@ -572,6 +605,7 @@
     }
   }
 
+  /* animasi reveal khusus section peta (radar) */
   #peta.reveal-on-scroll{ transition: opacity .25s linear; }
   #peta.reveal-on-scroll .section-head,
   #peta.reveal-on-scroll .card{ transition:none; opacity:0; }
@@ -631,11 +665,13 @@
     }
   }
 
+  /* metric row (list angka) */
   .metric-row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border-soft); font-size:12.5px;}
   .metric-row:last-child{border-bottom:none;}
   .metric-row .mname{color:var(--text-dim);}
   .metric-row .mval{font-family:var(--font-mono); font-weight:600;}
 
+  /* tabel klasifikasi */
   .clsf-table{ margin-top:8px; }
   .clsf-row{
     display:grid; grid-template-columns: minmax(0,1.5fr) repeat(3, minmax(0,1fr));
@@ -658,6 +694,7 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
+  /* alert banner */
   .alert-banner{
     display:none; align-items:center; gap:12px; margin-top:22px; padding:13px 18px;
     border-radius:12px; border:1px solid rgba(228,57,46,0.4); background:rgba(228,57,46,0.1);
@@ -686,6 +723,7 @@
   button.back-to-top-link.is-active{color:var(--ember);}
   button.back-to-top-link.is-active svg{color:var(--ember);}
 
+  /* tombol toggle tema */
   .theme-toggle-btn{ position:relative; }
   .theme-icon-wrap{position:relative; width:17px; height:17px; flex-shrink:0;}
   .theme-icon-wrap svg{
@@ -697,6 +735,7 @@
   html[data-theme="light"] .theme-icon-wrap .icon-fire{opacity:0; transform:rotate(-90deg) scale(.5);}
   html[data-theme="light"] .theme-icon-wrap .icon-water{opacity:1; transform:rotate(0) scale(1);}
 
+  /* responsive: tablet/mobile (<=768px) */
   @media (max-width: 768px){
     body{overflow-x:hidden;}
     .wrap{padding: 0 16px 56px;}
@@ -847,6 +886,8 @@
       pointer-events:none;
     }
   }
+  
+  /* responsive: mobile kecil (<=480px) */
   @media (max-width: 480px){
     .brand-text span{display:none;}
     .live-pill{padding:5px 9px; font-size:9.5px; gap:5px;}
@@ -870,6 +911,7 @@
     #confmatrix > div > div > div:last-child{ font-size:9.5px !important; }
   }
 
+  /* extra padding bawah krn bottom-nav */
   @media (max-width: 1100px){
     .wrap{ padding-bottom: 104px; }
   }

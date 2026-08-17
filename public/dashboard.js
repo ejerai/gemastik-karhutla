@@ -1590,12 +1590,17 @@ function getTopSiagaPoints(n) {
     .slice(0, n);
 }
 
-const COORD_SUGGEST_COUNT = 20;
+const COORD_SUGGEST_COUNT_MOBILE = 20;
+const COORD_SUGGEST_COUNT_DESKTOP = 60;
+
+function getCoordSuggestCount() {
+  return window.innerWidth > 700 ? COORD_SUGGEST_COUNT_DESKTOP : COORD_SUGGEST_COUNT_MOBILE;
+}
 
 function renderCoordSuggestions() {
   const box = document.getElementById("coord-suggest");
   if (!box) return;
-  const topN = getTopSiagaPoints(COORD_SUGGEST_COUNT);
+  const topN = getTopSiagaPoints(getCoordSuggestCount());
   if (!topN.length) {
     box.innerHTML = "";
     return;
@@ -1624,15 +1629,42 @@ function renderCoordSuggestions() {
   });
 }
 
+function adjustSuggestMaxHeight() {
+  const box = document.getElementById("coord-suggest");
+  if (!box || !box.classList.contains("open")) return;
+  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
+  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
+  if (window.innerWidth <= 700) {
+    box.style.maxHeight = "";
+    return;
+  }
+  const legend = document.getElementById("map-legend");
+  const boxTop = box.getBoundingClientRect().top;
+  const GAP_BOTTOM = 16; // jarak aman ke legend / tepi layar
+  const limit = legend
+    ? legend.getBoundingClientRect().top
+    : window.innerHeight;
+  const maxH = Math.max(120, Math.round(limit - boxTop - GAP_BOTTOM));
+  box.style.maxHeight = maxH + "px";
+}
+
 function openSuggest() {
   const box = document.getElementById("coord-suggest");
   if (!box) return;
   renderCoordSuggestions();
   box.classList.add("open");
+  requestAnimationFrame(adjustSuggestMaxHeight);
 }
 
 function closeSuggest() {
-  document.getElementById("coord-suggest")?.classList.remove("open");
+  const box = document.getElementById("coord-suggest");
+  box?.classList.remove("open");
+  if (box) box.style.maxHeight = "";
+}
+
+if (!window.__suggestResizeBound) {
+  window.__suggestResizeBound = true;
+  window.addEventListener("resize", adjustSuggestMaxHeight);
 }
 
 (function initCoordSearch() {
