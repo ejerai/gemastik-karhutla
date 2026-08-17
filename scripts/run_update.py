@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 """
-Orkestrator pipeline update data Karhutla EWS. Urutan:
-  1. fetch_firms_realtime.py       -> refresh data/fire_realtime_14d.csv
-  2. fetch_rainfall_openmeteo.py   -> refresh data/gpm_realtime_recent.parquet
-  3. generate_dashboard_data.py    -> regenerate public/dashboard_data.json
-
-Kalau salah satu langkah fetch gagal (mis. FIRMS_MAP_KEY belum diset, atau
-API sedang down), pipeline tetap lanjut pakai data yang sudah ada supaya
-dashboard tidak pernah kosong -- cuma datanya jadi tidak se-terbaru biasanya
-(masih valid, cuma "generated_at" & "last_updated" di header bakal
-menunjukkan kapan sukses terakhir).
-
-Jalankan:
   FIRMS_MAP_KEY=xxxxxxxx python scripts/run_update.py
 """
 from __future__ import annotations

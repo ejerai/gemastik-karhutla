@@ -1,12 +1,4 @@
 """
-Klasifikasi wilayah (region) berdasarkan koordinat lat/lon, dipakai untuk
-mengelompokkan titik api & grid risiko ke pulau/wilayah besar Indonesia.
-
-Pendekatan: point-in-polygon sederhana pakai bounding box per pulau utama,
-dengan pengecualian untuk memisahkan Kalimantan vs Sumatra vs Sulawesi yang
-berdekatan, dan fallback "Lainnya" (Nusa Tenggara, Maluku, dan area laut/
-perbatasan yang tidak masuk box manapun).
-
 Referensi kasar batas wilayah (lat, lon dalam derajat desimal):
   Sumatra      : lon  95.0 - 106.5, lat  -6.2 -  6.2
   Jawa         : lon 105.0 - 114.9, lat -9.0  - -5.5

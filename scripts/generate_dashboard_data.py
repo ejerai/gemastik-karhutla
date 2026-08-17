@@ -53,17 +53,8 @@ FEATURES = [
     "precip_roll7", "precip_roll14", "lat_grid", "lon_grid",
     "day_of_year", "month",
 ]
-# grid_fire_history SENGAJA TIDAK dimasukkan ke FEATURES classifier. Dites
-# langsung: kalau dimasukkan, XGBoost men-split >50% keputusan di fitur ini
-# (karena cuma ~7.5% grid nasional yang pernah tercatat kebakaran di arsip
-# 2 bulan), sehingga 92.5% wilayah lain otomatis dianggap "aman" TIDAK PEDULI
-# sekering apa pun curah hujannya hari ini -- peta jadi cuma "napak tilas"
-# lokasi lama, bukan peringatan dini yang reaktif. Solusinya: model dilatih
-# HANYA dari curah hujan+lokasi+waktu (reaktif ke kondisi hari ini), lalu
-# grid_fire_history digabung belakangan lewat blend_history_boost() sebagai
-# pendorong risiko di lokasi historis rawan -- bukan penentu tunggal.
-HISTORY_BOOST_WEIGHT = 0.45  # kontribusi maksimum riwayat lokasi ke risk_score akhir
-HISTORY_BOOST_SATURATION = 3.0  # makin kecil, makin cepat "penuh" (0,1,2,3x kejadian dulu)
+HISTORY_BOOST_WEIGHT = 0.45  
+HISTORY_BOOST_SATURATION = 3.0  
 
 
 def blend_history_boost(proba: np.ndarray, history_raw: np.ndarray) -> np.ndarray:
@@ -124,17 +115,8 @@ def load_raw():
     fire_rt["acq_date"] = pd.to_datetime(fire_rt["acq_date"])
     gpm["acq_date"] = pd.to_datetime(gpm["acq_date"])
     gpm = gpm.rename(columns={"lat": "lat_grid", "lon": "lon_grid"})
-    # PENTING: kolom lat/lon di parquet GPM tersimpan sebagai float32.
-    # float32(-10.95) sebenarnya bernilai -10.949999809265137 saat di-upcast ke
-    # float64, jadi merge langsung terhadap grid float64 dari data fire (yang
-    # sudah dibulatkan .round(2)) akan gagal match untuk >95% baris. Cast eksplisit
-    # ke float64 lalu bulatkan ke 2 desimal supaya representasinya identik.
     gpm["lat_grid"] = gpm["lat_grid"].astype("float64").round(2)
     gpm["lon_grid"] = gpm["lon_grid"].astype("float64").round(2)
-
-    # Kalau ada tambalan data curah hujan real-time (hasil fetch_rainfall_openmeteo.py),
-    # gabungkan di atas arsip: untuk tanggal yang overlap, versi real-time menang
-    # (karena lebih baru & sudah termasuk beberapa hari proyeksi ke depan).
     realtime_path = DATA_DIR / "gpm_realtime_recent.parquet"
     if realtime_path.exists():
         rt_gpm = pd.read_parquet(realtime_path)
@@ -142,8 +124,6 @@ def load_raw():
         rt_gpm = rt_gpm.rename(columns={"lat": "lat_grid", "lon": "lon_grid"})
         rt_gpm["lat_grid"] = rt_gpm["lat_grid"].astype("float64").round(2)
         rt_gpm["lon_grid"] = rt_gpm["lon_grid"].astype("float64").round(2)
-        # concat lalu drop_duplicates(keep="last"): baris dari rt_gpm (ditaruh
-        # belakang) menang untuk kombinasi (grid, tanggal) yang overlap dengan arsip.
         gpm = pd.concat([gpm, rt_gpm], ignore_index=True)
         gpm = gpm.drop_duplicates(subset=["lat_grid", "lon_grid", "acq_date"], keep="last")
         log(f"  tambalan realtime GPM ditemukan: {len(rt_gpm):,} baris "
@@ -259,9 +239,6 @@ def train_model(train_grid: pd.DataFrame):
     train_df = df[df.acq_date.isin(train_dates)]
     test_df = df[df.acq_date.isin(test_dates)]
 
-    # Sisihkan 15% tanggal TERAKHIR dari periode training sebagai validation set,
-    # murni untuk memilih ambang keputusan (threshold) -- supaya test set tetap
-    # "belum pernah dilihat" sama sekali saat threshold dipilih (hindari kebocoran).
     val_split_idx = int(len(train_dates) * 0.85)
     fit_dates, val_dates = train_dates[:val_split_idx], train_dates[val_split_idx:]
     fit_df = df[df.acq_date.isin(fit_dates)]
@@ -288,29 +265,17 @@ def train_model(train_grid: pd.DataFrame):
         random_state=42,
     )
 
-    # 1) Model sementara dilatih tanpa validation window, dipakai HANYA untuk
-    #    memilih threshold (maksimalkan F2) di data yang belum pernah dilatih.
-    #    Threshold dipilih di atas skor GABUNGAN (model dinamis + history boost)
-    #    karena itu yang benar-benar dipakai untuk status di peta, bukan cuma
-    #    output mentah model.
     val_model = XGBClassifier(**model_kwargs)
     val_model.fit(X_fit, y_fit)
     val_proba_dynamic = val_model.predict_proba(X_val)[:, 1]
     val_proba = blend_history_boost(val_proba_dynamic, val_df["grid_fire_history"].to_numpy())
     prec_v, rec_v, thresh_v = precision_recall_curve(y_val, val_proba)
-    # F2 (beta=2): bobot recall 2x lipat dari presisi. Untuk sistem peringatan DINI,
-    # kebakaran yang terlewat (false negative) jauh lebih mahal daripada alarm palsu
-    # (false positive) -- jadi threshold sengaja dipilih lebih "murah hati" ke recall
-    # dibanding F1 murni.
     beta = 2.0
     f2_v = (1 + beta**2) * prec_v * rec_v / ((beta**2 * prec_v) + rec_v + 1e-9)
     best_i = int(np.argmax(f2_v[:-1])) if len(thresh_v) else 0
     decision_threshold = float(thresh_v[best_i]) if len(thresh_v) else 0.5
     log(f"  threshold hasil tuning (val, F2-optimal, prioritas recall): {decision_threshold:.3f} "
         f"(presisi={prec_v[best_i]:.3f}, recall={rec_v[best_i]:.3f})")
-
-    # 2) Model final dilatih ulang pakai SELURUH periode training (fit+val)
-    #    seperti semula, lalu dievaluasi di test set memakai threshold di atas.
     model = XGBClassifier(**model_kwargs)
     model.fit(X_train, y_train)
 
@@ -328,7 +293,6 @@ def train_model(train_grid: pd.DataFrame):
         output_dict=True, zero_division=0,
     )
 
-    # Sampling kurva ROC ke ~25 titik supaya JSON tidak membengkak
     idx = np.linspace(0, len(fpr) - 1, min(25, len(fpr))).astype(int)
     roc_curve_sampled = {"fpr": fpr[idx].round(4).tolist(), "tpr": tpr[idx].round(4).tolist()}
 
@@ -415,16 +379,12 @@ def resolve_target_date(gpm_feat: pd.DataFrame) -> pd.Timestamp:
         log(f"  Tanggal analisis (hari ini): {resolved.date()} "
             f"(kalender aktual: {today_real.date()})")
         return resolved
-    # Fallback ekstrem: seharusnya nyaris tidak pernah kejadian (PAST_DAYS=16
-    # di fetch_rainfall_openmeteo.py selalu mencakup hari ini), tapi kalau
-    # semua data grid entah kenapa ada di masa depan, pakai yang paling awal
-    # -- lebih aman daripada diam-diam pakai tanggal paling jauh ke depan.
     log("  PERINGATAN: tidak ada data grid pada/sebelum tanggal kalender aktual, "
         "fallback ke tanggal grid paling awal yang tersedia.")
     return pd.Timestamp(available.min())
 
 
-# 5. Prediksi risiko nasional untuk tanggal target (EWS)
+# prediksi risiko nasional untuk tanggal target (EWS)
 def build_ews(model, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
     log(f"Menghitung peta risiko nasional untuk tanggal target {target_date.date()}...")
     today = gpm_feat[gpm_feat.acq_date == target_date].dropna(subset=FEATURES).copy()
@@ -520,12 +480,6 @@ def build_projection(gpm_feat: pd.DataFrame, model, target_date: pd.Timestamp, d
     n_forecast_days = 0
     for i in range(days):
         future_date = target_date + pd.Timedelta(days=i + 1)
-
-        # PRIORITASKAN data forecast ASLI (Open-Meteo forecast_days, lihat
-        # fetch_rainfall_openmeteo.py) kalau baris grid untuk tanggal ini
-        # sudah tersedia -- jauh lebih akurat daripada menebak lewat
-        # ekstrapolasi tren linear. Ekstrapolasi cuma dipakai sebagai
-        # fallback untuk hari-hari di luar cakupan forecast yang tersedia.
         actual = gpm_feat[gpm_feat.acq_date == future_date].dropna(subset=FEATURES)
         if len(actual) > 0:
             step = actual

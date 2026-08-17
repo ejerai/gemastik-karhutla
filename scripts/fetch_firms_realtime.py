@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 """
-Ambil hotspot kebakaran real-time (near real-time, delay ~3 jam dari satelit)
-dari NASA FIRMS Area API, untuk wilayah Indonesia, lalu simpan sebagai
-data/fire_realtime_14d.csv dengan skema kolom yang sama seperti sebelumnya.
-
-Butuh MAP_KEY gratis dari: https://firms.modaps.eosdis.nasa.gov/api/map_key/
-Set sebagai environment variable FIRMS_MAP_KEY.
-
-MAP_KEY punya limit 5.000 transaksi / 10 menit -- script ini cuma pakai
-beberapa transaksi (3 window x per sensor), jauh di bawah limit.
-
-Jalankan:
   FIRMS_MAP_KEY=xxxxxxxx python scripts/fetch_firms_realtime.py
 """
 from __future__ import annotations
@@ -25,19 +14,10 @@ import requests
 
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
-
-# Bounding box Indonesia: west,south,east,north (samakan dengan cakupan grid GPM)
 BBOX = "95.0,-11.0,141.0,6.0"
 
 # Sensor yang dipakai. VIIRS resolusinya lebih baik (375m) dibanding MODIS (1km).
 SOURCES = ["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT"]
-
-# PENTING: endpoint Area API FIRMS batas day_range-nya cuma 1..5 per request
-# (dikonfirmasi dari dokumentasi resmi firms.modaps.eosdis.nasa.gov/api/area/),
-# BUKAN 10 seperti yang ditulis sebelumnya -- itu bug yang bikin API selalu
-# balas 400 Bad Request. Supaya tetap dapat cakupan ~14 hari (sesuai nama file
-# fire_realtime_14d.csv), kita pecah jadi 3 window 5 hari yang berantai
-# mundur dari hari ini, pakai parameter [DATE] opsional di endpoint.
 MAX_DAY_RANGE = 5
 N_WINDOWS = 3  # 3 x 5 hari = cakupan 15 hari ke belakang
 
@@ -74,7 +54,6 @@ def fetch_source(map_key: str, source: str) -> pd.DataFrame:
         f"{N_WINDOWS} window x {MAX_DAY_RANGE} hari)...")
     frames = []
     for w in range(N_WINDOWS):
-        # Window w=0 = paling baru (5 hari terakhir), w=1 = 5 hari sebelum itu, dst.
         window_start = today - timedelta(days=(w + 1) * MAX_DAY_RANGE - 1)
         try:
             df = fetch_source_window(map_key, source, window_start, MAX_DAY_RANGE)
@@ -128,8 +107,6 @@ def main() -> None:
 
     if frames:
         combined = pd.concat(frames, ignore_index=True)
-        # Samakan skema kolom dengan file lama (beberapa kolom mungkin tidak ada
-        # tergantung sensor, isi dengan NaN kalau memang tidak tersedia)
         for col in TARGET_COLUMNS:
             if col not in combined.columns:
                 combined[col] = pd.NA
@@ -138,15 +115,17 @@ def main() -> None:
         combined = pd.DataFrame(columns=TARGET_COLUMNS)
         log("  Semua sensor gagal run ini -- 100% data yang disimpan berasal dari run sebelumnya.")
 
-    if old_data is not None and len(old_data) > 0 and failed_sources:
-        # Ada sensor yang gagal: gabung sama data lama supaya baris dari
-        # sensor yang gagal kali ini tidak hilang (fallback), baris baru
-        # (sensor yang berhasil) tetap menang kalau ada overlap.
+    if old_data is not None and len(old_data) > 0:
         merged = pd.concat([old_data, combined], ignore_index=True)
         merged = merged.drop_duplicates(
             subset=["latitude", "longitude", "acq_date", "acq_time", "satellite"], keep="last"
         )
-        log(f"  Sensor gagal: {', '.join(failed_sources)} -- digabung dengan data lama sebagai fallback.")
+        if failed_sources:
+            log(f"  Sensor gagal (exception): {', '.join(failed_sources)} -- data lama dipakai fallback.")
+        elif combined.empty:
+            log("  PERINGATAN: 0 baris baru dari SEMUA sensor (kemungkinan semua window "
+                "gagal diam-diam -- cek log 'Window ... gagal' di atas). Data lama "
+                "dipertahankan sebagai fallback, TIDAK ditimpa kosong.")
     else:
         merged = combined
 
