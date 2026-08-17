@@ -172,11 +172,6 @@
         <p class="section-desc">Grid spasial 0.1° (~11km) di seluruh Indonesia. Klik titik untuk detail probabilitas risiko & curah hujan.</p>
       </div>
       <div class="map-toolbar">
-        <form class="coord-search" id="coord-search" autocomplete="off">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="coord-search-input" placeholder="Cari koordinat, mis. -1.5, 118.0" inputmode="decimal" />
-          <button type="submit">Cari</button>
-        </form>
         <div class="region-select" id="region-filter">
           <button type="button" class="region-select-trigger" id="region-filter-trigger">
             <span class="region-select-trigger-dot"></span>
@@ -194,6 +189,16 @@
     </div>
     <div class="card map-card">
       <div id="map"></div>
+      <div class="coord-search-overlay" id="coord-search-overlay">
+        <form class="coord-search" id="coord-search" autocomplete="off">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="coord-search-input" placeholder="Cari koordinat, mis. -1.5, 118.0" inputmode="decimal" />
+          <button type="submit" aria-label="Cari">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+        <div class="coord-suggest" id="coord-suggest"></div>
+      </div>
       <button type="button" class="map-fullscreen-btn" id="map-fullscreen-btn" aria-label="Perbesar peta">
         <svg id="map-fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
       </button>

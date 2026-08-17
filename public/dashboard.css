@@ -198,40 +198,142 @@
   .map-fullscreen-btn:hover{background:var(--bg-elev-2); border-color:var(--ember); color:var(--ember);}
   .map-fullscreen-btn svg{width:18px; height:18px;}
   .map-card.map-fullscreen{
-    position:fixed !important; inset:0; z-index:2000; border-radius:0; margin:0;
+    position:fixed !important;
+    top:0 !important; right:0 !important; bottom:0 !important; left:0 !important;
+    width:100vw !important; height:100vh !important; height:100dvh !important;
+    max-width:none !important; max-height:none !important;
+    z-index:2000; border-radius:0 !important; margin:0 !important;
+    border:none !important; box-sizing:border-box;
     display:flex; flex-direction:column;
   }
   .map-card.map-fullscreen #map{height:auto !important; flex:1; transition:none;}
   body.map-fullscreen-active{overflow:hidden;}
+  /* PENTING: #peta punya class .reveal-on-scroll, yang transform-nya jadi
+     translateY(0) (bukan "none") begitu section terlihat. Elemen leluhur
+     dengan transform selain "none" (atau will-change:transform) membuat
+     "containing block" baru buat descendant position:fixed -- efeknya
+     .map-card.map-fullscreen jadi "fixed" relatif ke kotak section #peta,
+     BUKAN ke viewport, makanya muncul spasi kosong di kiri/kanan/atas saat
+     fullscreen. Matikan transform & will-change leluhurnya selama mode
+     fullscreen aktif supaya fixed-nya benar-benar penuh layar.
+  */
+  body.map-fullscreen-active .reveal-on-scroll{
+    transform:none !important;
+    will-change:auto !important;
+  }
   .map-card.map-fs-anim{animation:mapFsIn .28s ease;}
   .map-card.map-fs-anim-out{animation:mapFsOut .16s ease forwards;}
   @keyframes mapFsIn{ from{opacity:.35;} to{opacity:1;} }
   @keyframes mapFsOut{ from{opacity:1;} to{opacity:.35;} }
   .map-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 0;}
   #map{height:460px; width:100%; filter: saturate(0.85); position:relative; z-index:1; isolation:isolate;}
-  .coord-search{
-    display:flex; align-items:center; gap:7px;
-    font-family:var(--font-mono); font-size:10.5px; color:var(--text);
-    background:var(--bg-elev-2); border:1px solid var(--border); border-radius:10px;
-    padding:6px 10px; transition: border-color .18s ease, box-shadow .22s ease;
+  /* Light mode: peta jadi citra satelit asli (Esri World Imagery), jadi
+     tidak perlu didesaturasi seperti basemap vektor gelap -- biarkan warna
+     aslinya (hijau hutan, coklat lahan terbuka, dst.) tetap kelihatan. */
+  html[data-theme="light"] #map{filter:none;}
+  .coord-search-overlay{
+    position:absolute; top:16px; left:16px; z-index:1500; width:min(320px, calc(100% - 32px));
+    opacity:0; transform:translateY(-10px) scale(.98); pointer-events:none;
+    transition: opacity .32s cubic-bezier(.16,.8,.24,1), transform .32s cubic-bezier(.16,.8,.24,1);
   }
-  .coord-search:focus-within{border-color:var(--ember); box-shadow:0 0 0 3px rgba(255,122,51,0.16);}
-  .coord-search svg{flex-shrink:0; color:var(--text-faint);}
+  .map-card.map-fullscreen .coord-search-overlay{
+    opacity:1; transform:translateY(0) scale(1); pointer-events:auto;
+  }
+  .coord-search{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--font-mono); font-size:11px; color:var(--text);
+    background: linear-gradient(155deg, var(--glass-a-strong), var(--glass-b-strong));
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border:1px solid var(--hairline-09); border-radius:999px;
+    padding:10px 8px 10px 14px;
+    box-shadow: 0 8px 24px var(--shadow-med), 0 0 0 1px var(--hairline-07) inset;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .coord-search:focus-within{border-color:var(--ember); box-shadow:0 8px 24px var(--shadow-med), 0 0 0 3px rgba(255,122,51,0.18);}
+  .coord-search svg{flex-shrink:0; color:var(--text-faint); transition:color .2s ease;}
+  .coord-search:focus-within svg:first-child{color:var(--ember);}
+  .coord-search button svg{color:#fff;}
   .coord-search input{
     background:none; border:none; outline:none; color:var(--text);
-    font-family:var(--font-mono); font-size:10.5px; width:170px; min-width:0;
+    font-family:var(--font-mono); font-size:11.5px; width:100%; min-width:0;
   }
   .coord-search input::placeholder{color:var(--text-faint);}
   .coord-search button{
-    font-family:var(--font-mono); font-size:10.5px; font-weight:600; color:var(--text-dim);
-    background:transparent; border:none; border-left:1px solid var(--border); padding-left:9px;
-    cursor:pointer; white-space:nowrap; transition:.15s;
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:50%;
+    color:#fff; background:var(--ember); border:none;
+    cursor:pointer; transition: background .15s ease, transform .15s ease;
   }
-  .coord-search button:hover{color:var(--ember);}
-  .coord-search.invalid{border-color:var(--danger); box-shadow:0 0 0 3px rgba(239,83,80,0.16);}
+  .coord-search button:hover{background:var(--ember-light); transform:scale(1.06);}
+  .coord-search.invalid{animation: coordShake .32s ease;}
+  .coord-search.invalid{border-color:var(--danger); box-shadow:0 8px 24px var(--shadow-med), 0 0 0 3px rgba(239,83,80,0.18);}
+  @keyframes coordShake{
+    0%, 100%{ transform:translateX(0); }
+    25%{ transform:translateX(-4px); }
+    75%{ transform:translateX(4px); }
+  }
+
+  .coord-suggest{
+    margin-top:8px; overflow-x:hidden; overflow-y:hidden;
+    background: linear-gradient(155deg, var(--glass-a-strong), var(--glass-b-strong));
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    border:1px solid var(--hairline-09); border-radius:14px;
+    box-shadow: 0 8px 24px var(--shadow-med);
+    max-height:0; opacity:0;
+    transition: max-height .28s cubic-bezier(.16,.8,.24,1), opacity .22s ease;
+    scrollbar-width:thin; scrollbar-color: var(--bg-elev-2) transparent;
+  }
+  .coord-suggest::-webkit-scrollbar{width:6px;}
+  .coord-suggest::-webkit-scrollbar-thumb{background:var(--bg-elev-2); border-radius:6px;}
+  .coord-suggest::-webkit-scrollbar-track{background:transparent;}
+  /* Terbuka: daftar bisa lebih panjang dari sebelumnya (dulu dibatasi 5 &
+     tidak bisa discroll) -- sekarang boleh discroll kalau isinya melebihi
+     tinggi ini, lebih tinggi lagi di desktop karena layarnya lebih lega. */
+  .coord-suggest.open{max-height:280px; opacity:1; overflow-y:auto;}
+  @media (min-width:701px){
+    .coord-suggest.open{max-height:420px;}
+  }
+  .coord-suggest-label{
+    position:sticky; top:0; z-index:1;
+    font-family:var(--font-mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--text-faint); padding:10px 14px 4px;
+    background: linear-gradient(155deg, var(--glass-a-strong), var(--glass-b-strong));
+    backdrop-filter: blur(20px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+  }
+  .coord-suggest-item{
+    display:flex; align-items:center; gap:10px; width:100%;
+    padding:8px 14px; border:none; background:none; cursor:pointer; text-align:left;
+    font-family:var(--font-mono); color:var(--text); transition: background .15s ease;
+  }
+  .coord-suggest-item:hover{background:var(--hover-tint);}
+  .coord-suggest-item .rank{
+    flex-shrink:0; width:18px; height:18px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9.5px; font-weight:700; background:var(--bg-elev-2); color:var(--text-faint);
+  }
+  .coord-suggest-item .info{flex:1; min-width:0;}
+  .coord-suggest-item .coord{font-size:11px; color:var(--text);}
+  .coord-suggest-item .region{font-size:9.5px; color:var(--text-faint); margin-top:1px;}
+  .coord-suggest-item .risk{flex-shrink:0; font-size:11px; font-weight:700; color:var(--siaga1);}
+
   @media (max-width:700px){
-    .coord-search{order:-1; width:100%;}
-    .coord-search input{width:100%;}
+    /* Search box tetap di posisi atas seperti desktop -- tombol close
+       fullscreen dipindah ke kanan bawah (di atas tombol zoom in/out)
+       supaya tidak ada elemen lain yang tabrakan dengan search box. */
+    .coord-search-overlay{left:12px; right:12px; top:16px; width:auto;}
+
+    /* 84px = 8px margin bawah leaflet-control + 72px tinggi stack tombol
+       zoom (34+4+34) + 4px jarak tipis ke tombol ini, biar rapat/nyatu
+       kayak bagian dari grup tombol zoom. */
+    .map-card.map-fullscreen .map-fullscreen-btn{
+      top:auto; left:auto; right:8px; bottom:84px;
+      width:34px; height:34px;
+      border-radius:9px;
+    }
+    .map-card.map-fullscreen .map-fullscreen-btn svg{width:16px; height:16px;}
   }
 
   .layer-toggle{display:flex; gap:6px; background:var(--bg-elev-2); padding:4px; border-radius:9px; border:1px solid var(--border);}
@@ -660,6 +762,24 @@
     .map-legend.expanded{max-height:60vh; overflow-y:auto;}
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
       .map-legend{background: var(--bg-elev-2);}
+    }
+
+    /* Light mode: di atas basemap satelit (terang & penuh warna/detail),
+       gradient glass putih pekat + border garis tegas dari versi dark mode
+       jadi kelihatan seperti panel putih rata/flat, bukan kaca buram
+       (foto di baliknya nyaris tidak "tembus"). Bikin versi light mode-nya
+       sendiri: warna lebih transparan di tepi atas (biar citra satelit di
+       baliknya tetap kebayang & transisinya halus, tidak ada garis tegas),
+       makin pekat ke bawah, plus blur+saturate dinaikkan. */
+    html[data-theme="light"] .map-legend{
+      border-top:none;
+      background: linear-gradient(180deg, 
+      rgb(255 255 255 / 1%) 0px, 
+      rgb(255 255 255 / 93%) 22px, 
+      rgb(255 255 255) 100%);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      box-shadow: 0 -10px 28px rgba(15,30,25,0.16);
     }
 
     .map-legend-handle{

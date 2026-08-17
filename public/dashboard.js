@@ -17,6 +17,7 @@
     } catch (e) {}
     updateMetaThemeColor();
     if (window.applyChartTheme) window.applyChartTheme();
+    if (window.applyMapTheme) window.applyMapTheme();
   }
   function setThemeFade(theme) {
     var html = document.documentElement;
@@ -57,6 +58,7 @@
       revealBusy = false;
     });
   }
+  window.__getKarhutlaTheme = getTheme;
   updateMetaThemeColor();
   var btn = document.getElementById("theme-toggle");
   if (btn) {
@@ -450,6 +452,43 @@ async function loadData() {
 }
 
 let LEAFLET_MAP, LAYER_GROUPS = {};
+let BASE_LAYER = null, LABEL_LAYER = null;
+
+const BASEMAPS = {
+  dark: {
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    options: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 }
+  },
+  light: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    options: {
+      attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, GIS User Community",
+      maxZoom: 19
+    },
+    labels: {
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      options: { maxZoom: 19, attribution: "" }
+    }
+  }
+};
+
+function currentThemeName() {
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+}
+
+function addBasemap(map, theme) {
+  const cfg = BASEMAPS[theme] || BASEMAPS.dark;
+  BASE_LAYER = L.tileLayer(cfg.url, cfg.options).addTo(map);
+  LABEL_LAYER = cfg.labels ? L.tileLayer(cfg.labels.url, cfg.labels.options).addTo(map) : null;
+}
+
+function applyMapTheme() {
+  if (!LEAFLET_MAP) return;
+  if (BASE_LAYER) { LEAFLET_MAP.removeLayer(BASE_LAYER); BASE_LAYER = null; }
+  if (LABEL_LAYER) { LEAFLET_MAP.removeLayer(LABEL_LAYER); LABEL_LAYER = null; }
+  addBasemap(LEAFLET_MAP, currentThemeName());
+}
+window.applyMapTheme = applyMapTheme;
 
 let CURRENT_DATA = null;
 
@@ -475,7 +514,7 @@ function renderAll(data) {
   applyChartTheme();
 }
 
-let _navUpdatedAt = null;
+let _navUpdatedAt = null; // date object dari meta.generated_at, dipakai timer relative-time
 
 function formatRelativeID(deltaMs) {
   const sec = Math.floor(deltaMs / 1000);
@@ -501,9 +540,9 @@ function tickNavUpdated() {
   const abs = _navUpdatedAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
   el.textContent = abs;
   if (dot) {
-    let color = "#5fd98a"; 
-    if (deltaHours >= 24) color = "#ef5350"; 
-    else if (deltaHours >= 6) color = "#f2b84b";
+    let color = "#5fd98a"; // safe/hijau
+    if (deltaHours >= 24) color = "#ef5350"; // danger/merah
+    else if (deltaHours >= 6) color = "#f2b84b"; // warn/kuning
     dot.style.background = color;
     dot.style.boxShadow = `0 0 0 3px ${color}2e`;
   }
@@ -695,6 +734,29 @@ function rainColor(t) {
   return lerpColor(RAIN_STOPS[i], RAIN_STOPS[i + 1], seg - i);
 }
 
+function alignFullscreenBtnAboveZoom() {
+  const mapCard = document.querySelector(".map-card");
+  const fsBtn = document.getElementById("map-fullscreen-btn");
+  if (!mapCard || !fsBtn) return;
+  const isMobileFullscreen = window.innerWidth <= 700 && mapCard.classList.contains("map-fullscreen");
+  if (!isMobileFullscreen) {
+    fsBtn.style.removeProperty("top");
+    fsBtn.style.removeProperty("left");
+    fsBtn.style.removeProperty("right");
+    fsBtn.style.removeProperty("bottom");
+    return;
+  }
+  const zoomEl = mapCard.querySelector(".leaflet-control-zoom");
+  if (!zoomEl) return;
+  const cardRect = mapCard.getBoundingClientRect();
+  const zoomRect = zoomEl.getBoundingClientRect();
+  const GAP = 8;
+  fsBtn.style.top = "auto";
+  fsBtn.style.left = "auto";
+  fsBtn.style.right = Math.round(cardRect.right - zoomRect.right) + "px";
+  fsBtn.style.bottom = Math.round(cardRect.bottom - zoomRect.top + GAP) + "px";
+}
+
 function renderMap(data) {
   const ews = data.ews || {};
   const allPoints = ews.map_points || [];
@@ -712,11 +774,8 @@ function renderMap(data) {
   L.control.zoom({
     position: "bottomright"
   }).addTo(LEAFLET_MAP);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
-    subdomains: "abcd",
-    maxZoom: 19
-  }).addTo(LEAFLET_MAP);
+  requestAnimationFrame(alignFullscreenBtnAboveZoom);
+  addBasemap(LEAFLET_MAP, currentThemeName());
   const cellBounds = p => [ [ p.lat - GRID_HALF, p.lon - GRID_HALF ], [ p.lat + GRID_HALF, p.lon + GRID_HALF ] ];
   const maxPrecip = Math.max(1, ...points.map(p => p.precip_mm || 0));
   const riskLayer = L.layerGroup();
@@ -829,9 +888,13 @@ function renderMap(data) {
         fsBtn.setAttribute("aria-label", willExpand ? "Perkecil peta" : "Perbesar peta");
         if (willExpand) legendSheet?.classList.remove("expanded");
         mapCard.classList.add("map-fs-anim");
-        requestAnimationFrame(() => LEAFLET_MAP.invalidateSize());
+        requestAnimationFrame(() => {
+          LEAFLET_MAP.invalidateSize();
+          alignFullscreenBtnAboveZoom();
+        });
         setTimeout(() => {
           LEAFLET_MAP.invalidateSize();
+          alignFullscreenBtnAboveZoom();
           mapCard.classList.remove("map-fs-anim");
         }, 280);
       };
@@ -859,7 +922,10 @@ function renderMap(data) {
     };
     if (!window.__mapResizeBound) {
       window.__mapResizeBound = true;
-      window.addEventListener("resize", () => LEAFLET_MAP && LEAFLET_MAP.invalidateSize());
+      window.addEventListener("resize", () => {
+        LEAFLET_MAP && LEAFLET_MAP.invalidateSize();
+        alignFullscreenBtnAboveZoom();
+      });
     }
   }
 }
@@ -1390,6 +1456,59 @@ function checkAndNotify(data) {
   revealEls.forEach(el => io.observe(el));
 })();
 
+(function() {
+  const links = document.querySelectorAll(".bn-link");
+  if (!links.length) return;
+  const sections = [...links]
+    .map(link => document.querySelector(link.getAttribute("href")))
+    .filter(Boolean);
+  if (!sections.length) return;
+
+  const setActive = id => {
+    links.forEach(link => {
+      link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
+    });
+  };
+
+  const BN_OFFSET = 100;
+
+  links.forEach(link => {
+    link.addEventListener("click", e => {
+      const href = link.getAttribute("href");
+
+      setActive(href.slice(1));
+      const target = document.querySelector(href);
+      if (!target) return; 
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - BN_OFFSET;
+      window.scrollTo({ top, behavior: "smooth" });
+    });
+  });
+
+  if (!("IntersectionObserver" in window)) return;
+
+  const visibleSections = new Map();
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      visibleSections.set(entry.target.id, entry.intersectionRatio);
+    });
+
+    let topId = null;
+    let topRatio = 0;
+    visibleSections.forEach((ratio, id) => {
+      if (ratio > topRatio) {
+        topRatio = ratio;
+        topId = id;
+      }
+    });
+    if (topId && topRatio > 0) setActive(topId);
+  }, {
+    threshold: [0, .1, .25, .5, .75, 1],
+    rootMargin: "-15% 0px -55% 0px"
+  });
+  sections.forEach(sec => io.observe(sec));
+})();
+
 // pencarian koordinat di peta 
 let SEARCH_MARKER = null;
 
@@ -1418,35 +1537,26 @@ function findNearestGridPoint(lat, lon) {
   return bestDist <= 0.12 ? best : null;
 }
 
-function runCoordSearch() {
-  const form = document.getElementById("coord-search");
-  const input = document.getElementById("coord-search-input");
-  if (!form || !input) return;
-  const coord = parseCoordInput(input.value);
-  form.classList.remove("invalid");
-  if (!coord) {
-    form.classList.add("invalid");
-    return;
-  }
-  if (!LEAFLET_MAP) return; 
+function jumpToPoint(lat, lon, knownPoint) {
+  if (!LEAFLET_MAP) return; // peta belum siap, jangan crash
 
   if (SEARCH_MARKER) {
     LEAFLET_MAP.removeLayer(SEARCH_MARKER);
     SEARCH_MARKER = null;
   }
 
-  const nearest = findNearestGridPoint(coord.lat, coord.lon);
+  const nearest = knownPoint || findNearestGridPoint(lat, lon);
   const popupHtml = nearest
     ? `<div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text);">
-        <b>${coord.lat.toFixed(3)}, ${coord.lon.toFixed(3)}</b><br>
+        <b>${lat.toFixed(3)}, ${lon.toFixed(3)}</b><br>
         Sel grid terdekat: ${nearest.lat.toFixed(2)}, ${nearest.lon.toFixed(2)} · ${nearest.region || "-"}<br>
         Risiko: <b>${(nearest.risk_score * 100).toFixed(0)}%</b> · ${nearest.status}<br>
         Curah hujan: ${nearest.precip_mm ?? "-"} mm</div>`
     : `<div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text);">
-        <b>${coord.lat.toFixed(3)}, ${coord.lon.toFixed(3)}</b><br>
+        <b>${lat.toFixed(3)}, ${lon.toFixed(3)}</b><br>
         Tidak ada data grid di dekat titik ini pada tampilan saat ini.</div>`;
 
-  SEARCH_MARKER = L.circleMarker([coord.lat, coord.lon], {
+  SEARCH_MARKER = L.circleMarker([lat, lon], {
     radius: 9,
     color: "#FFB454",
     weight: 2,
@@ -1455,19 +1565,94 @@ function runCoordSearch() {
     className: "coord-search-marker"
   }).addTo(LEAFLET_MAP).bindPopup(popupHtml).openPopup();
 
-  LEAFLET_MAP.flyTo([coord.lat, coord.lon], Math.max(LEAFLET_MAP.getZoom(), 9), { duration: .8 });
+  LEAFLET_MAP.flyTo([lat, lon], Math.max(LEAFLET_MAP.getZoom(), 9), { duration: .8 });
 }
 
-(function initCoordSearch() {
+function runCoordSearch() {
   const form = document.getElementById("coord-search");
   const input = document.getElementById("coord-search-input");
   if (!form || !input) return;
+  const coord = parseCoordInput(input.value);
+  form.classList.remove("invalid");
+  if (!coord) {
+    void form.offsetWidth;
+    form.classList.add("invalid");
+    return;
+  }
+  closeSuggest();
+  jumpToPoint(coord.lat, coord.lon);
+}
+
+function getTopSiagaPoints(n) {
+  const points = CURRENT_DATA?.ews?.map_points || [];
+  return [...points]
+    .sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0))
+    .slice(0, n);
+}
+
+const COORD_SUGGEST_COUNT = 20;
+
+function renderCoordSuggestions() {
+  const box = document.getElementById("coord-suggest");
+  if (!box) return;
+  const topN = getTopSiagaPoints(COORD_SUGGEST_COUNT);
+  if (!topN.length) {
+    box.innerHTML = "";
+    return;
+  }
+  const items = topN.map((p, i) => `
+    <button type="button" class="coord-suggest-item" data-lat="${p.lat}" data-lon="${p.lon}">
+      <span class="rank">${i + 1}</span>
+      <span class="info">
+        <span class="coord">${p.lat.toFixed(2)}, ${p.lon.toFixed(2)}</span>
+        <span class="region">${p.region || "-"}</span>
+      </span>
+      <span class="risk">${Math.round((p.risk_score || 0) * 100)}%</span>
+    </button>
+  `).join("");
+  box.innerHTML = `<div class="coord-suggest-label">${topN.length} titik paling SIAGA saat ini</div>${items}`;
+  box.querySelectorAll(".coord-suggest-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lat = parseFloat(btn.dataset.lat);
+      const lon = parseFloat(btn.dataset.lon);
+      const input = document.getElementById("coord-search-input");
+      if (input) input.value = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+      closeSuggest();
+      const point = topN.find(p => p.lat === lat && p.lon === lon);
+      jumpToPoint(lat, lon, point);
+    });
+  });
+}
+
+function openSuggest() {
+  const box = document.getElementById("coord-suggest");
+  if (!box) return;
+  renderCoordSuggestions();
+  box.classList.add("open");
+}
+
+function closeSuggest() {
+  document.getElementById("coord-suggest")?.classList.remove("open");
+}
+
+(function initCoordSearch() {
+  const wrap = document.getElementById("coord-search-overlay");
+  const form = document.getElementById("coord-search");
+  const input = document.getElementById("coord-search-input");
+  if (!wrap || !form || !input) return;
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     runCoordSearch();
   });
   input.addEventListener("input", () => form.classList.remove("invalid"));
+  input.addEventListener("focus", openSuggest);
+  document.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target)) closeSuggest();
+  });
 })();
+
+// Nav link header (desktop)
+const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;
 
