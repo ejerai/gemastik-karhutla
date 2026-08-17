@@ -1335,7 +1335,7 @@ function renderModel(data) {
   }
   if (data.model?.class_balance_note) {
     repHtml += `<div class="clsf-note-wrap" tabindex="0">
-      <span class="clsf-note-trigger">⚠️ Kenapa akurasi tinggi meski model belum sempurna?</span>
+      <span class="clsf-note-trigger">Klik disini ringkasan nya.</span>
       <div class="clsf-note-tooltip">⚠️ ${data.model.class_balance_note}</div>
     </div>`;
   }
