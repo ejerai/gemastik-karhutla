@@ -24,7 +24,7 @@ GRID_STEP = 0.1
 PAST_DAYS = 4 
 FORECAST_DAYS = 8  
 BATCH_SIZE = 150    
-REQUEST_DELAY_SEC = 1.5
+REQUEST_DELAY_SEC = 3.0
 N_SHARDS = 8
 SHARD_OVERRIDE_ENV = "FETCH_SHARD_OVERRIDE" 
 
@@ -50,7 +50,7 @@ def log(msg: str) -> None:
 
 
 def build_grid_points() -> list[tuple[float, float]]:
-    """Pakai grid persis dari parquet historis kalau ada (biar identik),
+    """pakai grid persis dari parquet historis kalau ada (biar identik),
     fallback bikin grid baru kalau file historis belum ada. Grid difilter ke
     sel DARAT saja -- grid GPM mentah adalah kotak persegi (bounding box)
     yang ~76% isinya laut (curah hujan di tengah laut tidak relevan buat
@@ -112,7 +112,7 @@ def fetch_batch(points: list[tuple[float, float]], session: requests.Session) ->
 
 
 MAX_RETRIES = 3
-RETRY_BACKOFF_SEC = 8 
+RETRY_BACKOFF_SEC = 15
 
 
 def fetch_batch_with_retry(points: list[tuple[float, float]], session: requests.Session) -> pd.DataFrame | None:
