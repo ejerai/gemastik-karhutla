@@ -1,3 +1,4 @@
+/* Dashboard CSS Three Body Problem GEMASTIK */
 .topnav-outer{
     position: sticky; top:0; z-index: 100;
     display:flex; justify-content:center;
@@ -208,15 +209,7 @@
   }
   .map-card.map-fullscreen #map{height:auto !important; flex:1; transition:none;}
   body.map-fullscreen-active{overflow:hidden;}
-  /* PENTING: #peta punya class .reveal-on-scroll, yang transform-nya jadi
-     translateY(0) (bukan "none") begitu section terlihat. Elemen leluhur
-     dengan transform selain "none" (atau will-change:transform) membuat
-     "containing block" baru buat descendant position:fixed -- efeknya
-     .map-card.map-fullscreen jadi "fixed" relatif ke kotak section #peta,
-     BUKAN ke viewport, makanya muncul spasi kosong di kiri/kanan/atas saat
-     fullscreen. Matikan transform & will-change leluhurnya selama mode
-     fullscreen aktif supaya fixed-nya benar-benar penuh layar.
-  */
+  /* peta */
   body.map-fullscreen-active .reveal-on-scroll{
     transform:none !important;
     will-change:auto !important;
@@ -227,9 +220,7 @@
   @keyframes mapFsOut{ from{opacity:1;} to{opacity:.35;} }
   .map-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 0;}
   #map{height:460px; width:100%; filter: saturate(0.85); position:relative; z-index:1; isolation:isolate;}
-  /* Light mode: peta jadi citra satelit asli (Esri World Imagery), jadi
-     tidak perlu didesaturasi seperti basemap vektor gelap -- biarkan warna
-     aslinya (hijau hutan, coklat lahan terbuka, dst.) tetap kelihatan. */
+
   html[data-theme="light"] #map{filter:none;}
   .coord-search-overlay{
     position:absolute; top:16px; left:16px; z-index:1500; width:min(320px, calc(100% - 32px));
@@ -288,9 +279,6 @@
   .coord-suggest::-webkit-scrollbar{width:6px;}
   .coord-suggest::-webkit-scrollbar-thumb{background:var(--bg-elev-2); border-radius:6px;}
   .coord-suggest::-webkit-scrollbar-track{background:transparent;}
-  /* Terbuka: daftar bisa lebih panjang dari sebelumnya (dulu dibatasi 5 &
-     tidak bisa discroll) -- sekarang boleh discroll kalau isinya melebihi
-     tinggi ini, lebih tinggi lagi di desktop karena layarnya lebih lega. */
   .coord-suggest.open{max-height:280px; opacity:1; overflow-y:auto;}
   @media (min-width:701px){
     .coord-suggest.open{max-height:420px;}
@@ -320,14 +308,9 @@
   .coord-suggest-item .risk{flex-shrink:0; font-size:11px; font-weight:700; color:var(--siaga1);}
 
   @media (max-width:700px){
-    /* Search box tetap di posisi atas seperti desktop -- tombol close
-       fullscreen dipindah ke kanan bawah (di atas tombol zoom in/out)
-       supaya tidak ada elemen lain yang tabrakan dengan search box. */
+    /* Search box  */
     .coord-search-overlay{left:12px; right:12px; top:16px; width:auto;}
 
-    /* 84px = 8px margin bawah leaflet-control + 72px tinggi stack tombol
-       zoom (34+4+34) + 4px jarak tipis ke tombol ini, biar rapat/nyatu
-       kayak bagian dari grup tombol zoom. */
     .map-card.map-fullscreen .map-fullscreen-btn{
       top:auto; left:auto; right:8px; bottom:84px;
       width:34px; height:34px;
@@ -764,13 +747,7 @@
       .map-legend{background: var(--bg-elev-2);}
     }
 
-    /* Light mode: di atas basemap satelit (terang & penuh warna/detail),
-       gradient glass putih pekat + border garis tegas dari versi dark mode
-       jadi kelihatan seperti panel putih rata/flat, bukan kaca buram
-       (foto di baliknya nyaris tidak "tembus"). Bikin versi light mode-nya
-       sendiri: warna lebih transparan di tepi atas (biar citra satelit di
-       baliknya tetap kebayang & transisinya halus, tidak ada garis tegas),
-       makin pekat ke bawah, plus blur+saturate dinaikkan. */
+    /* light mode map */
     html[data-theme="light"] .map-legend{
       border-top:none;
       background: linear-gradient(180deg, 
