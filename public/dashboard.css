@@ -333,6 +333,7 @@
     /* Search box  */
     .coord-search-overlay{left:12px; right:12px; top:16px; width:auto;}
     .coord-suggest-label{display:none;}
+    .coord-search input{font-size:16px !important;}
 
     .map-card.map-fullscreen .map-fullscreen-btn{
       top:auto; left:auto; right:8px; bottom:84px;
