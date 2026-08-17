@@ -694,35 +694,50 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* catatan class-imbalance: trigger kecil + tooltip fade, tidak mendorong tinggi card */
-  .clsf-note-wrap{
-    position:relative; margin-top:10px; display:inline-block; cursor:help; max-width:100%;
+  /* catatan class-imbalance: kartu catatan modern.
+     Default (mobile-first): kartu statis, selalu tampil, menempel di bawah tabel.
+     Di perangkat dengan hover asli (desktop/mouse): kartu jadi popover mengambang
+     yang muncul saat JUDUL card di-hover atau di-focus, bukan lagi teks trigger. */
+  .clsf-card{ position:relative; }
+  .clsf-title{ transition:color .2s ease; }
+
+  .clsf-note-panel{
+    display:flex; align-items:flex-start; gap:11px;
+    margin-top:12px; padding:13px 15px;
+    background:var(--glass-a-strong);
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    box-shadow:0 6px 18px var(--shadow-soft);
   }
-  .clsf-note-trigger{
-    font-size:.78rem; font-family:var(--font-mono); color:var(--text-faint);
-    border-bottom:1px dashed var(--border); padding-bottom:1px;
-    display:inline-block; line-height:1.4;
+  .clsf-note-icon{
+    flex-shrink:0; width:26px; height:26px; margin-top:1px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%; background:rgba(242,184,75,0.14); color:var(--warn);
   }
-  .clsf-note-wrap:hover .clsf-note-trigger,
-  .clsf-note-wrap:focus .clsf-note-trigger{ color:var(--text-dim); }
-  .clsf-note-tooltip{
-    position:absolute; bottom:calc(100% + 10px); left:0; z-index:30;
-    width:280px; max-width:min(80vw, 320px);
-    background:var(--bg-elev-2); border:1px solid var(--border); border-radius:10px;
-    padding:12px 14px; font-size:.78rem; line-height:1.55; color:var(--text-dim);
-    box-shadow:0 10px 28px rgba(0,0,0,.4);
-    opacity:0; visibility:hidden; transform:translateY(4px);
-    transition:opacity .2s ease, transform .2s ease, visibility .2s ease;
-    pointer-events:none;
+  .clsf-note-icon svg{ width:14px; height:14px; }
+  .clsf-note-text{
+    font-size:.79rem; line-height:1.6; color:var(--text-dim);
   }
-  .clsf-note-wrap:hover .clsf-note-tooltip,
-  .clsf-note-wrap:focus .clsf-note-tooltip,
-  .clsf-note-wrap:focus-within .clsf-note-tooltip{
-    opacity:1; visibility:visible; transform:translateY(0);
-    pointer-events:auto;
-  }
-  @media(max-width:600px){
-    .clsf-note-tooltip{ left:auto; right:0; width:240px; }
+
+  @media (hover:hover) and (pointer:fine){
+    .clsf-title{ cursor:help; }
+    .clsf-title:hover{ color:var(--ember-light); }
+
+    .clsf-note-panel{
+      position:absolute; top:40px; left:0; right:0; z-index:30;
+      margin-top:0; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      box-shadow:0 20px 44px var(--shadow-strong), 0 4px 14px var(--shadow-soft);
+      opacity:0; visibility:hidden; pointer-events:none;
+      transform:translateY(-6px) scale(.97); transform-origin:top left;
+      transition:opacity .32s cubic-bezier(.16,1,.3,1),
+                 transform .32s cubic-bezier(.16,1,.3,1),
+                 visibility .32s;
+    }
+    .clsf-title:hover ~ #classification-report .clsf-note-panel,
+    .clsf-title:focus-visible ~ #classification-report .clsf-note-panel{
+      opacity:1; visibility:visible; pointer-events:auto;
+      transform:translateY(0) scale(1);
+    }
   }
 
   /* alert banner */
