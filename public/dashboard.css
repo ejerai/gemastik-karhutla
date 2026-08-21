@@ -40,7 +40,7 @@
   @media (max-width: 640px){
     .topnav-outer{ padding: 14px 14px 0; }
     .topnav{border-radius: var(--radius); flex-wrap:wrap; padding:10px 12px;}
-    .topnav-outer::before{ height:168px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
+    .topnav-outer::before{ height:91px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
   }
   .brand{display:flex; align-items:center; gap:9px; flex-shrink:0;}
   .brand-mark{
