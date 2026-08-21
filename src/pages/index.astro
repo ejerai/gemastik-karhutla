@@ -307,23 +307,25 @@
       <div>
         <div class="eyebrow" data-tag="EDA">Eksplorasi data</div>
         <h2>Curah Hujan vs Kejadian Karhutla</h2>
-        <p class="section-desc">Perbandingan statistik akumulasi hujan pada kondisi terbakar dan tidak terbakar (nasional), serta korelasi antar fitur.</p>
+        <p class="section-desc">Perbandingan rentang curah hujan pada kondisi terbakar dan tidak terbakar (nasional), serta seberapa kuat hujan berhubungan dengan kejadian kebakaran.</p>
       </div>
     </div>
     <div class="grid-2">
       <div class="card reveal-item">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="1"/><path d="M4 12h16M9 4v4M15 4v4M9 16v4M15 16v4"/></svg>
-          Akumulasi Hujan 7 Hari (mm) — Median &amp; Kuartil
+          Rentang Curah Hujan 7 Hari (mm)
         </div>
         <div class="chart-box"><canvas id="chart-precip-box"></canvas></div>
+        <p class="eda-note-text">Bagian pudar di bawah adalah rentang bawah (di bawah Q1), bagian pekat adalah rentang tipikal (Q1–Q3), garis putih adalah median. Rentang "Terbakar" dan "Tidak Terbakar" saling tumpang tindih — artinya curah hujan saja tidak cukup untuk memastikan suatu wilayah akan terbakar atau tidak.</p>
       </div>
       <div class="card reveal-item">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
-          Heatmap Korelasi Fitur
+          Korelasi Fitur Hujan dengan Kejadian Kebakaran
         </div>
-        <div id="corr-grid" style="margin-top:14px;"></div>
+        <div id="corr-fire-list" class="corr-fire-list"></div>
+        <p class="eda-note-text">Korelasi di sini kecil karena mengukur hubungan linear satu-per-satu, sedangkan model XGBoost menangkap kombinasi banyak fitur sekaligus (misal: hujan rendah + lokasi + musim) — makanya fitur ini tetap jadi salah satu yang paling penting di model meski korelasinya lemah.</p>
       </div>
     </div>
   </section>

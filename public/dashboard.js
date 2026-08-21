@@ -346,7 +346,7 @@ const DEMO_DATA = {
   }
 };
 
-const EMBER = "#FF7A33", EMBER_L = "#FFB454", RAIN = "#4FB8D0", SAFE = "#5fd98a00", WARN = "#F2B84B", DANGER = "#EF5350", SIAGA1 = "#E4392E";
+const EMBER = "#FF7A33", EMBER_L = "#FFB454", RAIN = "#4FB8D0", SAFE = "#5FD98A", WARN = "#F2B84B", DANGER = "#EF5350", SIAGA1 = "#E4392E";
 
 function applyChartTheme() {
   const css = getComputedStyle(document.documentElement);
@@ -1159,41 +1159,86 @@ function renderEDA(data) {
   const cats = [ "no_fire", "fire" ];
   const labels = [ "Tidak Terbakar", "Terbakar" ];
   new Chart(document.getElementById("chart-precip-box"), {
-    type: "bar",
     data: {
       labels: labels,
-      datasets: [ {
-        label: "Median",
-        data: cats.map(c => box[c]?.median || 0),
-        backgroundColor: [ RAIN, SIAGA1 ],
-        borderRadius: 6,
-        maxBarThickness: 64
-      } ]
+      datasets: [
+        {
+          type: "bar",
+          label: "Rentang bawah (0–Q1)",
+          data: cats.map(c => box[c]?.q1 || 0),
+          backgroundColor: [ `${RAIN}22`, `${SIAGA1}22` ],
+          borderColor: [ `${RAIN}55`, `${SIAGA1}55` ],
+          borderWidth: 1,
+          borderSkipped: false,
+          stack: "s",
+          maxBarThickness: 64
+        },
+        {
+          type: "bar",
+          label: "Rentang tipikal (Q1–Q3)",
+          data: cats.map(c => (box[c]?.q3 || 0) - (box[c]?.q1 || 0)),
+          backgroundColor: [ `${RAIN}66`, `${SIAGA1}66` ],
+          borderColor: [ RAIN, SIAGA1 ],
+          borderWidth: 1.5,
+          borderRadius: 6,
+          stack: "s",
+          maxBarThickness: 64
+        },
+        {
+          type: "line",
+          label: "Median",
+          data: cats.map(c => box[c]?.median || 0),
+          showLine: false,
+          pointStyle: "line",
+          rotation: 90,
+          pointRadius: 15,
+          pointBorderWidth: 3,
+          pointBorderColor: "#F4F1EC",
+          pointBackgroundColor: "#F4F1EC"
+        }
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false
+          display: true,
+          position: "bottom",
+          labels: {
+            boxWidth: 9,
+            boxHeight: 9,
+            padding: 10,
+            font: {
+              size: 10.5
+            },
+            filter: item => item.text !== "Rentang bawah (0–Q1)"
+          }
         },
         tooltip: {
           callbacks: {
-            label: ctx => `Median hujan 7 hari: ${ctx.raw.toFixed(1)} mm`
+            label: ctx => {
+              if (ctx.dataset.type === "line") return `Median: ${ctx.raw.toFixed(1)} mm`;
+              if (ctx.datasetIndex === 0) return `Q1 (bawah): ${ctx.raw.toFixed(1)} mm`;
+              const c = cats[ctx.dataIndex];
+              return `Rentang tipikal: ${box[c]?.q1.toFixed(1)}–${box[c]?.q3.toFixed(1)} mm`;
+            }
           }
         }
       },
       scales: {
         y: {
+          stacked: true,
           grid: {
             color: "#1E2723"
           },
           title: {
             display: true,
-            text: "mm (median)"
+            text: "mm / 7 hari"
           }
         },
         x: {
+          stacked: true,
           grid: {
             display: false
           }
@@ -1201,28 +1246,35 @@ function renderEDA(data) {
       }
     }
   });
+
   const corr = data.eda?.correlation;
-  if (corr) {
-    const cols = corr.columns;
-    const n = cols.length;
-    const labelColW = 100;
-    const cellMinW = 72;
-    const gridMinWidth = labelColW + n * cellMinW;
-    let html = `<div class="tbl-scroll-hint">Geser untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>`;
-    html += `<div class="tbl-outer">`;
-    html += `<div class="tbl-wrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch;">`;
-    html += `<div style="display:grid; grid-template-columns: ${labelColW}px repeat(${n}, minmax(${cellMinW}px, 1fr)); gap:3px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; min-width:${gridMinWidth}px;">`;
-    html += `<div></div>` + cols.map(c => `<div style="color:var(--text-faint); text-align:center; white-space:nowrap; padding-bottom:8px; align-self:end;">${c}</div>`).join("");
-    corr.matrix.forEach((row, i) => {
-      html += `<div style="color:var(--text-dim); display:flex; align-items:center; padding-right:6px; justify-content:flex-end; white-space:nowrap;">${cols[i]}</div>`;
-      row.forEach(v => {
-        const alpha = Math.abs(v);
-        const color = v >= 0 ? `rgba(255,122,51,${alpha})` : `rgba(79,184,208,${alpha})`;
-        html += `<div title="${v.toFixed(2)}" style="aspect-ratio:1; background:${color}; border-radius:3px; display:flex; align-items:center; justify-content:center; color:${alpha > .55 ? "#0B0F0D" : "#8FA398"};">${v.toFixed(1)}</div>`;
-      });
-    });
-    html += "</div></div></div>";
-    document.getElementById("corr-grid").innerHTML = html;
+  const listEl = document.getElementById("corr-fire-list");
+  if (corr && listEl) {
+    const labelMap = {
+      precip_mm: "Hujan hari ini",
+      precip_lag1: "Hujan 1 hari lalu",
+      precip_lag3: "Hujan 3 hari lalu",
+      precip_lag7: "Hujan 7 hari lalu",
+      precip_roll7: "Rata² hujan 7 hari",
+      precip_roll14: "Rata² hujan 14 hari"
+    };
+    const fireRow = corr.matrix[corr.columns.indexOf("fire_occurred")] || [];
+    const featCols = corr.columns.filter(c => c !== "fire_occurred");
+    const rows = featCols.map(c => ({
+      label: labelMap[c] || c,
+      value: fireRow[corr.columns.indexOf(c)] ?? 0
+    }));
+    const maxAbs = Math.max(...rows.map(r => Math.abs(r.value)), 0.01);
+    listEl.innerHTML = rows.map(r => {
+      const pct = Math.max(4, Math.abs(r.value) / maxAbs * 100).toFixed(0);
+      const color = r.value >= 0 ? EMBER : RAIN;
+      const dir = r.value >= 0 ? "berbanding lurus" : "berbanding terbalik";
+      return `<div class="corr-row" title="${r.label}: korelasi ${r.value.toFixed(2)} (${dir} dengan kejadian kebakaran)">
+        <span class="corr-row-label">${r.label}</span>
+        <span class="corr-row-track"><span class="corr-row-fill" style="width:${pct}%; background:${color};"></span></span>
+        <span class="corr-row-value" style="color:${color};">${r.value.toFixed(2)}</span>
+      </div>`;
+    }).join("");
   }
 }
 
@@ -1637,8 +1689,6 @@ function renderCoordSuggestions() {
 function adjustSuggestMaxHeight() {
   const box = document.getElementById("coord-suggest");
   if (!box || !box.classList.contains("open")) return;
-  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
-  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
   if (window.innerWidth <= 700) {
     box.style.maxHeight = "";
     return;
@@ -1688,7 +1738,7 @@ if (!window.__suggestResizeBound) {
   });
 })();
 
-// Nav link header (desktop)
+// nav link header (desktop)
 const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;
