@@ -932,7 +932,7 @@ function renderMap(data) {
 
 function renderProjection(data) {
   const proj = data.ews?.projection || [];
-  new Chart(document.getElementById("chart-projection"), {
+  new Chart(document.getElementById("chart-projection-risk"), {
     type: "line",
     data: {
       labels: proj.map(p => p.date),
@@ -943,17 +943,54 @@ function renderProjection(data) {
         backgroundColor: "rgba(255,122,51,0.12)",
         fill: true,
         tension: .35,
-        yAxisID: "y",
         pointRadius: 3,
         pointBackgroundColor: EMBER
-      }, {
+      } ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          min: 0,
+          grid: {
+            color: "#1E2723"
+          },
+          title: {
+            display: true,
+            text: "Probabilitas"
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById("chart-projection-siaga1"), {
+    type: "line",
+    data: {
+      labels: proj.map(p => p.date),
+      datasets: [ {
         label: "Grid SIAGA 1",
         data: proj.map(p => p.siaga1_count),
         borderColor: SIAGA1,
+        backgroundColor: "rgba(228,57,46,0.1)",
         borderDash: [ 4, 3 ],
-        fill: false,
+        fill: true,
         tension: .35,
-        yAxisID: "y1",
         pointRadius: 3,
         pointBackgroundColor: SIAGA1
       } ]
@@ -967,31 +1004,14 @@ function renderProjection(data) {
       },
       plugins: {
         legend: {
-          position: "top",
-          align: "end",
-          labels: {
-            boxWidth: 10,
-            boxHeight: 10,
-            usePointStyle: true
-          }
+          display: false
         }
       },
       scales: {
         y: {
-          position: "left",
           min: 0,
           grid: {
             color: "#1E2723"
-          },
-          title: {
-            display: true,
-            text: "Probabilitas"
-          }
-        },
-        y1: {
-          position: "right",
-          grid: {
-            display: false
           },
           title: {
             display: true,
@@ -1008,14 +1028,35 @@ function renderProjection(data) {
   });
 }
 
+/* Kelompokkan grid rawan yang berdekatan (radius ~0.5 derajat, ~55km) jadi
+   satu baris representatif + jumlah sel serupa -- daripada menampilkan
+   10-20 sel bertetangga dari 1 klaster yang sama seolah-olah itu 10-20
+   lokasi berbeda se-Indonesia. */
+function clusterHazardRows(rows, radiusDeg = 0.5) {
+  const reps = [];
+  for (const r of rows) {
+    const near = reps.find(rep => Math.hypot(rep.point.lat - r.lat, rep.point.lon - r.lon) <= radiusDeg);
+    if (near) {
+      near.count += 1;
+    } else {
+      reps.push({ point: r, count: 1 });
+    }
+  }
+  return reps;
+}
+
 function renderTopHazard(data) {
   const allRows = data.ews?.top_hazard || [];
   const rows = CURRENT_REGION === "all" ? allRows : allRows.filter(r => r.region === CURRENT_REGION);
+  const clustered = clusterHazardRows(rows);
   const tbody = document.querySelector("#tbl-top-hazard tbody");
-  tbody.innerHTML = rows.map(r => {
+  tbody.innerHTML = clustered.map(({ point: r, count }) => {
     const c = statusColor(r.status);
-    return `<tr>\n      <td>${r.lat.toFixed(2)}, ${r.lon.toFixed(2)}</td>\n      <td>${r.region || "-"}</td>\n      <td>${(r.precip_roll7 ?? 0).toFixed(1)} mm</td>\n      <td style="color:${c}; font-weight:600;">${Math.round(r.risk_score * 100)}%</td>\n      <td><span class="status-chip" style="background:${c}20; color:${c};">${r.status}</span></td>\n    </tr>`;
-  }).join("") || '<tr><td colspan="5" class="loading-note">Tidak ada grid rawan di wilayah ini</td></tr>';
+    const simMd = count > 1
+      ? `<span title="Ditemukan ${count} sel berisiko tinggi dalam radius ~55km dari titik ini">+${count - 1} sel lain</span>`
+      : `<span style="color:var(--text-faint);">tunggal</span>`;
+    return `<tr>\n      <td>${r.lat.toFixed(2)}, ${r.lon.toFixed(2)}</td>\n      <td>${r.region || "-"}</td>\n      <td>${simMd}</td>\n      <td>${(r.precip_roll7 ?? 0).toFixed(1)} mm</td>\n      <td style="color:${c}; font-weight:600;">${Math.round(r.risk_score * 100)}%</td>\n      <td><span class="status-chip" style="background:${c}20; color:${c};">${r.status}</span></td>\n    </tr>`;
+  }).join("") || '<tr><td colspan="6" class="loading-note">Tidak ada grid rawan di wilayah ini</td></tr>';
 }
 
 function renderNational(data) {
@@ -1689,6 +1730,8 @@ function renderCoordSuggestions() {
 function adjustSuggestMaxHeight() {
   const box = document.getElementById("coord-suggest");
   if (!box || !box.classList.contains("open")) return;
+  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
+  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
   if (window.innerWidth <= 700) {
     box.style.maxHeight = "";
     return;
@@ -1738,7 +1781,7 @@ if (!window.__suggestResizeBound) {
   });
 })();
 
-// nav link header (desktop)
+// Nav link header (desktop)
 const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;

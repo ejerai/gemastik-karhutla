@@ -239,20 +239,27 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
           Proyeksi Risiko & Grid SIAGA 1
         </div>
-        <div class="chart-box tall"><canvas id="chart-projection"></canvas></div>
+        <div class="proj-chart-block">
+          <div class="proj-chart-label">Rata² probabilitas risiko nasional</div>
+          <div class="chart-box proj-mini"><canvas id="chart-projection-risk"></canvas></div>
+        </div>
+        <div class="proj-chart-block">
+          <div class="proj-chart-label">Jumlah grid berstatus SIAGA 1</div>
+          <div class="chart-box proj-mini"><canvas id="chart-projection-siaga1"></canvas></div>
+        </div>
       </div>
       <div class="card reveal-item">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-          10 Grid Paling Rawan Nasional
+          Area Paling Rawan Nasional
         </div>
-        <div class="card-sub">Berdasarkan skor risiko tanggal analisis</div>
+        <div class="card-sub">Dikelompokkan per klaster wilayah (~55km) — berdasarkan skor risiko tanggal analisis</div>
         <div class="tbl-scroll-hint">Geser tabel untuk lihat kolom lainnya <span class="hint-arrow">&#8594;</span></div>
         <div class="tbl-outer">
           <div class="tbl-wrap tbl-scroll" style="margin-top:10px; overflow-x:auto;" id="tbl-hazard-wrap">
             <table id="tbl-top-hazard">
-              <thead><tr><th>Koordinat</th><th>Wilayah</th><th>Hujan 7h (rata²)</th><th>Risiko</th><th>Status</th></tr></thead>
-              <tbody><tr><td colspan="5" class="loading-note">memuat data…</td></tr></tbody>
+              <thead><tr><th>Koordinat</th><th>Wilayah</th><th>Sel Serupa</th><th>Hujan 7h (rata²)</th><th>Risiko</th><th>Status</th></tr></thead>
+              <tbody><tr><td colspan="6" class="loading-note">memuat data…</td></tr></tbody>
             </table>
           </div>
         </div>

@@ -166,6 +166,9 @@
   .chart-box{position:relative; height:260px; margin-top:14px;}
   .chart-box.tall{height:320px;}
   .chart-box.short{height:190px;}
+  .chart-box.proj-mini{height:148px; margin-top:8px;}
+  .proj-chart-label{ font-size:.74rem; color:var(--text-faint); text-transform:uppercase; letter-spacing:.03em; margin-top:2px; }
+  .proj-chart-block + .proj-chart-block{ margin-top:20px; padding-top:18px; border-top:1px dashed var(--border); }
 
   @media (min-width:981px){
     #proyeksi .grid-2 .card,
@@ -179,6 +182,7 @@
     #proyeksi .grid-2 .card:nth-child(1) .chart-box,
     #eda .grid-2 .card:nth-child(1) .chart-box{ flex:1; height:auto; min-height:260px; }
     #proyeksi .grid-2 .card:nth-child(1) .chart-box.tall{ min-height:320px; }
+    #proyeksi .grid-2 .card:nth-child(1) .chart-box.proj-mini{ flex:none; height:158px; min-height:0; }
   }
 
   /* tabel scroll wrapper */
@@ -695,13 +699,16 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* catatan penjelas EDA */
+  /* catatan penjelas EDA (curah hujan / korelasi) -- teks kecil statis
+     di bawah tiap chart, konsisten sama gaya .clsf-note-text */
   .eda-note-text{
     margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);
     font-size:.79rem; line-height:1.6; color:var(--text-dim);
   }
 
-  /* list korelasi */
+  /* list korelasi -- pengganti chart sumbu-nol: baris biasa dari atas
+     ke bawah, label kiri tetap, bar tumbuh kiri->kanan, nilai di kanan.
+     Tidak ada sumbu yang perlu ditafsir arahnya. */
   .corr-fire-list{ margin-top:16px; display:flex; flex-direction:column; gap:13px; }
   .corr-row{
     display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:10px;
@@ -723,7 +730,10 @@
     .corr-row{ grid-template-columns:96px 1fr 42px; }
   }
 
-  /* catatan class-imbalance: kartu catatan modern */
+  /* catatan class-imbalance: kartu catatan modern.
+     Default (mobile-first): kartu statis, selalu tampil, menempel di bawah tabel.
+     Di perangkat dengan hover asli (desktop/mouse): kartu jadi popover mengambang
+     yang muncul saat JUDUL card di-hover atau di-focus, bukan lagi teks trigger. */
   .clsf-card{ position:relative; }
   .clsf-title{ transition:color .2s ease; }
 
@@ -932,6 +942,7 @@
     .chart-box{ height:230px; margin-top:12px; }
     .chart-box.tall{ height:270px; }
     .chart-box.short{ height:200px; }
+    .chart-box.proj-mini{ height:150px; }
 
     table{ min-width:540px; font-size:12px; }
     th{ padding:8px 9px; font-size:10px; }
@@ -978,6 +989,7 @@
     .chart-box{ height:210px; }
     .chart-box.tall{ height:250px; }
     .chart-box.short{ height:190px; }
+    .chart-box.proj-mini{ height:135px; }
     #confmatrix > div > div{ padding:9px !important; }
     #confmatrix > div > div > div:first-child{ font-size:17px !important; }
     #confmatrix > div > div > div:last-child{ font-size:9.5px !important; }
