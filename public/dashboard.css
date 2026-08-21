@@ -38,6 +38,7 @@
       0 4px 18px rgba(255,122,51,0.1);
   }
   @media (max-width: 640px){
+    .topnav-outer{ padding: 14px 14px 0; }
     .topnav{border-radius: var(--radius); flex-wrap:wrap; padding:10px 12px;}
     .topnav-outer::before{ height:168px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
   }
@@ -728,7 +729,7 @@
     .corr-row{ grid-template-columns:96px 1fr 42px; }
   }
 
-  /* catatan class-imbalance */
+  /* catatan class-imbalance: kartu catatan modern */
   .clsf-card{ position:relative; }
   .clsf-title{ transition:color .2s ease; }
 
@@ -970,6 +971,7 @@
     .brand-text span{display:none;}
     .live-pill{padding:5px 9px; font-size:9.5px; gap:5px;}
     .live-pill span:last-child{max-width:108px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .topnav-outer{ padding: 12px 10px 0; }
     .topnav{padding:8px 8px 8px 12px; gap:8px;}
     .kpi-value{font-size:19px;}
     .gauge-value{font-size:27px;}

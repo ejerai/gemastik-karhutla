@@ -779,7 +779,8 @@ function renderMap(data) {
   const cellBounds = p => [ [ p.lat - GRID_HALF, p.lon - GRID_HALF ], [ p.lat + GRID_HALF, p.lon + GRID_HALF ] ];
   const maxPrecip = Math.max(1, ...points.map(p => p.precip_mm || 0));
   const riskLayer = L.layerGroup();
-  points.forEach(p => {
+  const riskPoints = points.filter(p => p.status && p.status !== "Aman");
+  riskPoints.forEach(p => {
     const color = statusColor(p.status);
     const isSiaga1 = p.status && p.status.includes("SIAGA 1");
     const rect = L.rectangle(cellBounds(p), {
