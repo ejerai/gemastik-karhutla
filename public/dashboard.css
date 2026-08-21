@@ -8,7 +8,7 @@
   }
   .topnav-outer::before{
     content:''; position:absolute; inset:0 0 auto 0; height:96px;
-    background: linear-gradient(180deg, var(--bg) 30%, transparent);
+    background: linear-gradient(180deg, var(--bg) 55%, transparent);
     pointer-events:none;
   }
   .topnav{
@@ -39,6 +39,7 @@
   }
   @media (max-width: 640px){
     .topnav{border-radius: var(--radius); flex-wrap:wrap; padding:10px 12px;}
+    .topnav-outer::before{ height:168px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
   }
   .brand{display:flex; align-items:center; gap:9px; flex-shrink:0;}
   .brand-mark{
@@ -699,16 +700,13 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* catatan penjelas EDA (curah hujan / korelasi) -- teks kecil statis
-     di bawah tiap chart, konsisten sama gaya .clsf-note-text */
+  /* catatan penjelas EDA */
   .eda-note-text{
     margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);
     font-size:.79rem; line-height:1.6; color:var(--text-dim);
   }
 
-  /* list korelasi -- pengganti chart sumbu-nol: baris biasa dari atas
-     ke bawah, label kiri tetap, bar tumbuh kiri->kanan, nilai di kanan.
-     Tidak ada sumbu yang perlu ditafsir arahnya. */
+  /* list korelasi */
   .corr-fire-list{ margin-top:16px; display:flex; flex-direction:column; gap:13px; }
   .corr-row{
     display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:10px;
@@ -730,10 +728,7 @@
     .corr-row{ grid-template-columns:96px 1fr 42px; }
   }
 
-  /* catatan class-imbalance: kartu catatan modern.
-     Default (mobile-first): kartu statis, selalu tampil, menempel di bawah tabel.
-     Di perangkat dengan hover asli (desktop/mouse): kartu jadi popover mengambang
-     yang muncul saat JUDUL card di-hover atau di-focus, bukan lagi teks trigger. */
+  /* catatan class-imbalance */
   .clsf-card{ position:relative; }
   .clsf-title{ transition:color .2s ease; }
 
