@@ -1102,98 +1102,98 @@ function renderNational(data) {
       }
     }
   });
+
   const reg = (nat.regional || []).slice().sort((a, b) => b.count - a.count);
-  new Chart(document.getElementById("chart-regional"), {
-    type: "bar",
-    data: {
-      labels: reg.map(r => r.region),
-      datasets: [ {
-        data: reg.map(r => r.count),
-        backgroundColor: reg.map((_, i) => i === 0 ? EMBER : "rgba(255,122,51,0.35)"),
-        borderRadius: 6,
-        maxBarThickness: 34
-      } ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      indexAxis: "y",
-      scales: {
-        x: {
-          grid: {
-            color: "#1E2723"
-          }
-        },
-        y: {
-          grid: {
-            display: false
-          }
-        }
-      }
-    }
-  });
-  const donutOpts = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: "68%",
-    plugins: {
-      legend: {
-        position: "bottom",
-        labels: {
-          boxWidth: 9,
-          boxHeight: 9,
-          padding: 10,
-          font: {
-            size: 10.5
-          }
-        }
-      }
-    }
-  };
+  const totalReg = reg.reduce((s, r) => s + r.count, 0) || 1;
+  const pct = n => Math.round(n / totalReg * 100);
+  const [ r1, ...restAll ] = reg;
+  const rankingEl = document.getElementById("regional-ranking");
+  if (rankingEl && r1) {
+    rankingEl.innerHTML = `
+      <p class="nas-hint">Dari ${fmtNum(totalReg)} titik panas nasional, sebagian besar terjadi di sini</p>
+      <div class="rr-top">
+        <svg class="rr-top-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 0 0-14 0c0 4.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <span class="rr-top-name">${r1.region}</span>
+        <span class="rr-top-pct">${pct(r1.count)}%</span>
+      </div>
+      <div class="rr-track"><div class="rr-fill" style="width:${pct(r1.count)}%;"></div></div>
+      <div class="rr-list">
+        ${restAll.map(r => `<div class="rr-list-row">
+          <span class="rr-list-name">${r.region}</span>
+          <span class="rr-list-track"><span class="rr-list-fill" style="width:${Math.max(3, pct(r.count) / pct(r1.count) * 100)}%;"></span></span>
+          <span class="rr-list-pct">${pct(r.count)}%</span>
+        </div>`).join("")}
+      </div>
+      <p class="nas-hint" style="margin:16px 0 0;">Dihitung dari titik panas 30 hari terakhir — proporsi wilayah bisa bergeser seiring musim kemarau.</p>`;
+  }
+
   const conf = nat.confidence || {};
-  new Chart(document.getElementById("chart-confidence"), {
-    type: "doughnut",
-    data: {
-      labels: Object.keys(conf),
-      datasets: [ {
-        data: Object.values(conf),
-        backgroundColor: [ SAFE, WARN, SIAGA1 ],
-        borderWidth: 0
-      } ]
-    },
-    options: donutOpts
-  });
+  const totalConf = Object.values(conf).reduce((a, b) => a + b, 0) || 1;
+  const confPct = { nominal: Math.round((conf.nominal || 0) / totalConf * 100), low: Math.round((conf.low || 0) / totalConf * 100), high: Math.round((conf.high || 0) / totalConf * 100) };
+  const trustEl = document.getElementById("trust-meter");
+  if (trustEl) {
+    trustEl.innerHTML = `
+      <p class="nas-hint">Seberapa yakin sistem titik panas ini kebakaran beneran</p>
+      <div class="tm-headline"><span class="tm-num">${confPct.nominal}%</span><span class="nas-hint" style="margin:0;">terverifikasi tinggi (nominal)</span></div>
+      <div class="tm-track">
+        <div style="flex:${confPct.nominal || 1};background:${SAFE};"></div>
+        <div style="flex:${confPct.low || 1};background:${WARN};"></div>
+        <div style="flex:${confPct.high || 1};background:${SIAGA1};"></div>
+      </div>
+      <div class="tm-legend">
+        <span><span class="tm-dot" style="background:${SAFE};"></span>Terverifikasi tinggi ${confPct.nominal}%</span>
+        <span><span class="tm-dot" style="background:${WARN};"></span>Perlu dicek ${confPct.low}%</span>
+        <span><span class="tm-dot" style="background:${SIAGA1};"></span>Berisiko salah ${confPct.high}%</span>
+      </div>
+      <p class="nas-hint" style="margin:16px 0 0;">Kalau lagi buru-buru, cukup fokus ke titik berlabel "terverifikasi tinggi" dulu — potensi salah alarmnya paling kecil.</p>`;
+  }
+
   const dn = nat.daynight || {};
-  new Chart(document.getElementById("chart-daynight"), {
-    type: "doughnut",
-    data: {
-      labels: Object.keys(dn),
-      datasets: [ {
-        data: Object.values(dn),
-        backgroundColor: [ EMBER_L, "#3A4A42" ],
-        borderWidth: 0
-      } ]
-    },
-    options: donutOpts
-  });
+  const totalDN = Object.values(dn).reduce((a, b) => a + b, 0) || 1;
+  const dayPct = Math.round((dn.day || 0) / totalDN * 100);
+  const nightPct = 100 - dayPct;
+  const dnEl = document.getElementById("daynight-split");
+  if (dnEl) {
+    dnEl.innerHTML = `
+      <p class="nas-hint">Kapan titik panas paling sering terdeteksi</p>
+      <div class="dn-split">
+        <div class="dn-day" style="width:${dayPct}%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Siang ${dayPct}%</span></div>
+        <div class="dn-night" style="width:${nightPct}%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13.5A8.5 8.5 0 1 1 10.5 3.5a7 7 0 0 0 10 10z"/></svg><span>${nightPct}%</span></div>
+      </div>
+      <p class="nas-hint" style="margin:16px 0 0;">Sensor satelit bekerja paling optimal saat ada cahaya matahari, jadi wajar deteksi siang lebih banyak dari malam.</p>
+      <p class="nas-hint" style="margin:10px 0 0;">Deteksi malam umumnya lebih jarang salah, karena kontras panasnya lebih jelas dibanding siang hari.</p>`;
+  }
+
   const sat = nat.satellite || {};
-  new Chart(document.getElementById("chart-satellite"), {
-    type: "doughnut",
-    data: {
-      labels: Object.keys(sat),
-      datasets: [ {
-        data: Object.values(sat),
-        backgroundColor: [ EMBER, RAIN, "#8FA398" ],
-        borderWidth: 0
-      } ]
-    },
-    options: donutOpts
-  });
+  const totalSat = Object.values(sat).reduce((a, b) => a + b, 0) || 1;
+  const satMeta = {
+    N20: { name: "Satelit NOAA-20", desc: "Lewat 2 kali sehari, resolusi lebih tajam" },
+    N: { name: "Satelit Suomi NPP", desc: "Satelit kedua, buat saling cek silang" }
+  };
+  const satIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5 10 13l-2.5 2.5-3.5-3.5 2.5-2.5z"/><path d="M13 3l3.5 3.5-2 2L11 5l2-2z"/><path d="M9.5 6.5 17.5 14.5"/><path d="M3.5 20.5l3-3"/></svg>`;
+  const satEl = document.getElementById("satellite-cards");
+  if (satEl) {
+    const cards = Object.entries(sat).map(([ key, val ]) => {
+      const meta = satMeta[key] || { name: key, desc: "" };
+      return `<div class="sat-card">
+        ${satIcon}
+        <p class="sat-name">${meta.name}</p>
+        <p class="sat-desc">${meta.desc}</p>
+        <p class="sat-pct">${Math.round(val / totalSat * 100)}%</p>
+      </div>`;
+    }).join("");
+    satEl.innerHTML = `
+      <p class="nas-hint">Sumber titik panas berasal dari 2 satelit berbeda</p>
+      <div class="satellite-cards-grid">${cards}</div>
+      <p class="nas-hint" style="margin:16px 0 0;">Dua satelit dipakai bersamaan supaya titik panas bisa saling dicek ulang, jadi potensi salah deteksi makin kecil.</p>`;
+  }
+
+  const summaryEl = document.getElementById("nas-summary");
+  if (summaryEl && r1) {
+    const dnLabel = dayPct >= nightPct ? "siang hari" : "malam hari";
+    summaryEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <p>Dalam 30 hari terakhir, <strong>${r1.region}</strong> jadi wilayah paling banyak titik panas (${pct(r1.count)}% dari nasional). Kebanyakan terdeteksi <strong>${dnLabel}</strong>, dan <strong>${confPct.nominal}% datanya sudah terverifikasi tinggi</strong> jadi bisa cukup dipercaya.</p>`;
+  }
 }
 
 function renderEDA(data) {
@@ -1731,8 +1731,7 @@ function renderCoordSuggestions() {
 function adjustSuggestMaxHeight() {
   const box = document.getElementById("coord-suggest");
   if (!box || !box.classList.contains("open")) return;
-  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
-  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
+
   if (window.innerWidth <= 700) {
     box.style.maxHeight = "";
     return;
@@ -1782,7 +1781,7 @@ if (!window.__suggestResizeBound) {
   });
 })();
 
-// Nav link header (desktop)
+// nav link header (desktop)
 const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;

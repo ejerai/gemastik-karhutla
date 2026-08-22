@@ -276,6 +276,7 @@
         <p class="section-desc">Ringkasan pola titik panas FIRMS di seluruh wilayah pantauan Indonesia.</p>
       </div>
     </div>
+    <div class="nas-summary-card" id="nas-summary" style="margin-bottom:16px;"></div>
     <div class="grid-2" style="margin-bottom:16px;">
       <div class="card reveal-item">
         <div class="card-title">
@@ -289,21 +290,21 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 21V10M12 21V4M18 21v-7"/></svg>
           Sebaran per Wilayah
         </div>
-        <div class="chart-box"><canvas id="chart-regional"></canvas></div>
+        <div id="regional-ranking" class="regional-ranking"></div>
       </div>
     </div>
     <div class="grid-3">
       <div class="card reveal-item">
         <div class="card-title">Tingkat Kepercayaan Deteksi (FIRMS)</div>
-        <div class="chart-box short"><canvas id="chart-confidence"></canvas></div>
+        <div id="trust-meter" class="trust-meter"></div>
       </div>
       <div class="card reveal-item">
         <div class="card-title">Siang vs Malam</div>
-        <div class="chart-box short"><canvas id="chart-daynight"></canvas></div>
+        <div id="daynight-split" class="daynight-split"></div>
       </div>
       <div class="card reveal-item">
         <div class="card-title">Sumber Satelit</div>
-        <div class="chart-box short"><canvas id="chart-satellite"></canvas></div>
+        <div id="satellite-cards" class="satellite-cards"></div>
       </div>
     </div>
   </section>
@@ -416,7 +417,7 @@
 
   <div class="footer">
     <div class="footer-note">
-      <b>Karhutla EWS</b> — sistem peringatan dini kebakaran hutan &amp; lahan seluruh Indonesia. Model klasifikasi XGBoost dilatih dari fusi data titik panas FIRMS (VIIRS J1/NOAA-20) dan estimasi curah hujan GPM IMERG Daily, diperbarui otomatis setiap hari. Bukan data resmi BMKG/KLHK untuk tujuan riset &amp; simulasi. Peta dasar © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">CARTO</a>.<br><br>© 2026 three body problem.
+      <b>Karhutla EWS</b> — sistem peringatan dini kebakaran hutan &amp; lahan seluruh Indonesia. Model klasifikasi XGBoost dilatih dari fusi data titik panas FIRMS (VIIRS J1/NOAA-20) dan estimasi curah hujan GPM IMERG Daily, diperbarui otomatis setiap hari. Bukan data resmi BMKG/KLHK untuk tujuan riset &amp; simulasi. Peta dasar © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions" target="_blank" rel="noopener" style="color:inherit; text-decoration:underline;">CARTO</a>.<br><br><span class="footer-copyright-text">© 2026 three body problem.</span>
     </div>
     <div class="footer-right">
       <div class="source-tags">
@@ -426,14 +427,17 @@
         <span class="tag">Gemastik XIX 2026</span>
       </div>
       <div class="footer-actions">
-        <button type="button" class="back-to-top-link" id="footer-notif-btn" title="Aktifkan notifikasi browser" aria-label="Aktifkan notifikasi browser">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span id="footer-notif-label">Notifikasi</span>
-        </button>
-        <a href="#top" class="back-to-top-link" id="back-to-top">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-          Top
-        </a>
+        <span class="footer-copyright-mobile">© 2026 three body problem.</span>
+        <div class="footer-actions-buttons">
+          <button type="button" class="back-to-top-link" id="footer-notif-btn" title="Aktifkan notifikasi browser" aria-label="Aktifkan notifikasi browser">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span id="footer-notif-label">Notifikasi</span>
+          </button>
+          <a href="#top" class="back-to-top-link" id="back-to-top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Top
+          </a>
+        </div>
       </div>
     </div>
   </div>

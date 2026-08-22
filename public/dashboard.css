@@ -39,7 +39,13 @@
   }
   @media (max-width: 640px){
     .topnav-outer{ padding: 14px 14px 0; }
-    .topnav{border-radius: var(--radius); flex-wrap:wrap; padding:10px 12px;}
+    .topnav{
+      border-radius: var(--radius); flex-wrap:wrap; padding:10px 12px;
+      box-shadow:
+        0 1px 0 var(--glass-sheen) inset,
+        0 0 0 1px var(--shadow-ring),
+        0 6px 14px -8px var(--shadow-soft);
+    }
     .topnav-outer::before{ height:91px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
   }
   .brand{display:flex; align-items:center; gap:9px; flex-shrink:0;}
@@ -185,6 +191,11 @@
     #eda .grid-2 .card:nth-child(1) .chart-box{ flex:1; height:auto; min-height:260px; }
     #proyeksi .grid-2 .card:nth-child(1) .chart-box.tall{ min-height:320px; }
     #proyeksi .grid-2 .card:nth-child(1) .chart-box.proj-mini{ flex:none; height:158px; min-height:0; }
+
+    #nasional .grid-2 .card{ display:flex; flex-direction:column; }
+    #nasional .grid-2 .card:nth-child(1) .chart-box{ flex:1; height:auto; min-height:260px; }
+    #nasional .grid-3 .card{ display:flex; flex-direction:column; }
+    #nasional .grid-3 .card > div:last-child{ flex:1; display:flex; flex-direction:column; justify-content:center; }
   }
 
   /* tabel scroll wrapper */
@@ -548,6 +559,7 @@
   /* footer */
   .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:56px 0 0;}
   .footer{margin-top:56px; padding-top:26px; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px;}
+  .footer-copyright-mobile{ display:none; }
   .footer-note{font-size:12px; color:var(--text-faint); max-width:520px; line-height:1.7;}
   .footer-note b{color:var(--text-dim);}
   .source-tags{display:flex; gap:8px; flex-wrap:wrap;}
@@ -701,13 +713,16 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* catatan penjelas EDA */
+  /* catatan penjelas EDA (curah hujan / korelasi) -- teks kecil statis
+     di bawah tiap chart, konsisten sama gaya .clsf-note-text */
   .eda-note-text{
     margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);
     font-size:.79rem; line-height:1.6; color:var(--text-dim);
   }
 
-  /* list korelasi */
+  /* list korelasi -- pengganti chart sumbu-nol: baris biasa dari atas
+     ke bawah, label kiri tetap, bar tumbuh kiri->kanan, nilai di kanan.
+     Tidak ada sumbu yang perlu ditafsir arahnya. */
   .corr-fire-list{ margin-top:16px; display:flex; flex-direction:column; gap:13px; }
   .corr-row{
     display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:10px;
@@ -729,7 +744,69 @@
     .corr-row{ grid-template-columns:96px 1fr 42px; }
   }
 
-  /* catatan class-imbalance: kartu catatan modern */
+  /* === Analitik Nasional -- komponen ramah awam (bukan chart canvas) === */
+  .nas-hint{ font-size:.79rem; color:var(--text-dim); margin:0 0 14px; }
+
+  /* kartu ringkasan bahasa manusia di atas section */
+  .nas-summary-card{
+    display:flex; gap:12px; align-items:flex-start;
+    padding:16px 18px; border-radius:12px;
+    border:1px solid rgba(255,122,51,0.3); background:rgba(255,122,51,0.08);
+  }
+  .nas-summary-card svg{ width:19px; height:19px; color:var(--ember); flex-shrink:0; margin-top:1px; }
+  .nas-summary-card p{ margin:0; font-size:.86rem; line-height:1.65; color:var(--text); }
+  .nas-summary-card strong{ color:var(--ember-light); font-weight:600; }
+
+  /* ranking wilayah -- baris utama (wilayah #1) */
+  .rr-top{ display:flex; align-items:center; gap:9px; margin-bottom:8px; flex-wrap:wrap; }
+  .rr-top-icon{ width:17px; height:17px; color:var(--ember); flex-shrink:0; }
+  .rr-top-name{ font-size:.92rem; font-weight:600; color:var(--text); flex:1; min-width:0; }
+  .rr-top-pct{ font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--text); }
+  .rr-track{ height:8px; border-radius:4px; background:var(--bg-elev-2); overflow:hidden; margin-bottom:18px; }
+  .rr-fill{ height:100%; background:var(--ember); border-radius:4px; }
+  /* ranking wilayah -- daftar sisanya, semua wilayah ditampilkan (bukan digrup) */
+  .rr-list{ display:flex; flex-direction:column; gap:10px; }
+  .rr-list-row{ display:grid; grid-template-columns:104px 1fr 34px; align-items:center; gap:10px; }
+  .rr-list-name{ font-size:.76rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rr-list-track{ height:6px; border-radius:3px; background:var(--bg-elev-2); overflow:hidden; }
+  .rr-list-fill{ display:block; height:100%; background:var(--ember-light); border-radius:3px; opacity:.75; }
+  .rr-list-pct{ font-family:var(--font-display); font-size:.78rem; font-weight:600; color:var(--text); text-align:right; }
+
+  /* trust meter (kepercayaan deteksi) */
+  .tm-headline{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .tm-num{ font-size:1.9rem; font-weight:700; font-family:var(--font-display); color:var(--text); }
+  .tm-track{ display:flex; height:13px; border-radius:7px; overflow:hidden; gap:2px; }
+  .tm-legend{ display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:10px; font-size:.72rem; color:var(--text-dim); }
+  .tm-legend span{ display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+  .tm-dot{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+
+  /* siang vs malam */
+  .dn-split{ display:flex; height:40px; border-radius:8px; overflow:hidden; }
+  .dn-day, .dn-night{ display:flex; align-items:center; gap:6px; padding:0 10px; overflow:hidden; }
+  .dn-day{ background:#FAC775; color:#412402; justify-content:flex-start; }
+  .dn-night{ background:var(--bg-elev-2); color:var(--text-dim); justify-content:center; }
+  .dn-day svg, .dn-night svg{ width:15px; height:15px; flex-shrink:0; }
+  .dn-day span, .dn-night span{ font-size:.78rem; font-weight:600; white-space:nowrap; }
+
+  /* sumber satelit */
+  .satellite-cards-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; }
+  .sat-card{ padding:12px; border-radius:10px; background:var(--bg-elev-2); min-width:0; }
+  .sat-card svg{ width:18px; height:18px; color:var(--rain); }
+  .sat-name{ font-size:.82rem; font-weight:600; color:var(--text); margin:7px 0 2px; }
+  .sat-desc{ font-size:.72rem; color:var(--text-faint); margin:0 0 8px; line-height:1.4; }
+  .sat-pct{ font-size:1.15rem; font-weight:700; font-family:var(--font-display); color:var(--text); margin:0; }
+
+  @media (max-width:640px){
+    .tm-num{ font-size:1.6rem; }
+    .rr-top-pct{ font-size:1rem; }
+    .nas-summary-card{ padding:14px; }
+    .rr-list-row{ grid-template-columns:88px 1fr 32px; gap:8px; }
+  }
+
+  /* catatan class-imbalance: kartu catatan modern.
+     Default (mobile-first): kartu statis, selalu tampil, menempel di bawah tabel.
+     Di perangkat dengan hover asli (desktop/mouse): kartu jadi popover mengambang
+     yang muncul saat JUDUL card di-hover atau di-focus, bukan lagi teks trigger. */
   .clsf-card{ position:relative; }
   .clsf-title{ transition:color .2s ease; }
 
@@ -787,6 +864,7 @@
 
   .footer-right{display:flex; flex-direction:column; align-items:flex-end; gap:12px;}
   .footer-actions{display:flex; align-items:center; gap:22px;}
+  .footer-actions-buttons{display:flex; align-items:center; gap:22px;}
 
   .back-to-top-link{
     display:inline-flex; align-items:center; gap:6px;
@@ -927,6 +1005,11 @@
 
     .footer-actions{gap:20px;}
     .back-to-top-link{font-size:11px; padding:6px 0 7px;}
+    .footer-copyright-text{display:none;}
+    .footer-copyright-mobile{
+      display:inline-block; font-size:11px; color:var(--text-faint);
+    }
+    .footer-actions{width:100%; justify-content:space-between;}
 
     .grid-2, .grid-3, .grid-4{ gap:12px; }
     .card-title{ font-size:13.5px; gap:7px; line-height:1.35; }
