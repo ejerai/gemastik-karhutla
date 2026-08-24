@@ -557,25 +557,61 @@ function renderNav(data) {
   }
 }
 
+/* koordinat pusat tiap pulau pada path peta Indonesia (viewBox "633 505 130 70"),
+   diambil dari data geografis nyata -- dipakai buat naruh titik hotspot proporsional
+   ke persentase regional asli, bukan taruh sembarangan. "Lainnya" sengaja dilewati
+   karena nggak punya 1 lokasi tetap. */
+const REGION_MAP_COORDS = {
+  "Kalimantan": { x: 685.3, y: 531.4 },
+  "Papua": { x: 739.8, y: 546.9 },
+  "Sumatra": { x: 652.9, y: 530.0 },
+  "Bali & Nusa Tenggara": { x: 700, y: 558 },
+  "Sulawesi": { x: 706.2, y: 536.6 },
+  "Jawa": { x: 675.4, y: 553.4 },
+  "Maluku": { x: 723.1, y: 539.4 }
+};
+
 function renderHero(data) {
   const ews = data.ews || {};
+  const nat = data.national || {};
   const risk = ews.mean_risk ?? 0;
-  const circumference = 2 * Math.PI * 68;
-  const offset = circumference - Math.min(1, risk * 4) * circumference;
-  const arc = document.getElementById("gauge-arc");
   const gaugeValueEl = document.getElementById("gauge-value");
-  arc.style.strokeDasharray = circumference;
-  gaugeValueEl.textContent = "0%";
-  document.getElementById("hero-region-title").textContent = `Wilayah Pantauan: ${ews.region_name || "Indonesia"}`;
-  document.getElementById("hero-region-desc").textContent = `Probabilitas rata-rata risiko karhutla pada ${fmtNum(Object.values(ews.status_summary || {}).reduce((a, b) => a + b, 0))} grid 0.1° se-Indonesia, tanggal analisis ${ews.target_date || "-"}.`;
-  const badge = document.getElementById("hero-status-badge");
+  gaugeValueEl.textContent = "0";
+
+  const totalGrid = Object.values(ews.status_summary || {}).reduce((a, b) => a + b, 0);
+  document.getElementById("hero-meta-date").textContent = ews.target_date || "-";
+  document.getElementById("hero-meta-grid").textContent = `${fmtNum(totalGrid)} sel · 0,1°`;
+
   const siaga1 = ews.status_summary?.["SIAGA 1 (Sangat Bahaya)"] || 0;
   const siaga2 = ews.status_summary?.["SIAGA 2 (Bahaya)"] || 0;
   const waspada = ews.status_summary?.["Waspada"] || 0;
   const level = siaga1 > 0 ? "SIAGA 1" : siaga2 > 0 ? "SIAGA 2" : waspada > 0 ? "WASPADA" : "AMAN";
+  const levelCount = siaga1 > 0 ? siaga1 : siaga2 > 0 ? siaga2 : waspada > 0 ? waspada : totalGrid;
   const c = statusColor(level.includes("1") ? "SIAGA 1" : level.includes("2") ? "SIAGA 2" : level);
-  badge.textContent = `Status Nasional: ${level} · ${fmtNum(siaga1)} grid SIAGA 1`;
-  badge.style.color = c;
+  const statusWordEl = document.getElementById("hero-status-word");
+  statusWordEl.textContent = level;
+  statusWordEl.style.color = c;
+  document.getElementById("hero-status-badge").textContent = `${fmtNum(levelCount)} dari ${fmtNum(totalGrid)} grid 0,1° berstatus ${level}`;
+
+  const reg = (nat.regional || []).slice().sort((a, b) => b.count - a.count);
+  const totalReg = reg.reduce((s, r) => s + r.count, 0) || 1;
+  const dotsEl = document.getElementById("hero-map-dots");
+  if (dotsEl && reg.length) {
+    const top = reg[0];
+    dotsEl.innerHTML = reg.map(r => {
+      const coord = REGION_MAP_COORDS[r.region];
+      if (!coord) return "";
+      const pct = r.count / totalReg * 100;
+      if (r.region === top.region) {
+        return `<circle class="hot-ring" cx="${coord.x}" cy="${coord.y}" r="6.5"/><circle cx="${coord.x}" cy="${coord.y}" r="2.6" fill="${SIAGA1}"/>`;
+      }
+      const rr = Math.max(0.8, Math.min(1.8, 0.6 + pct * 0.1));
+      return `<circle cx="${coord.x}" cy="${coord.y}" r="${rr.toFixed(2)}" fill="${WARN}"/>`;
+    }).join("");
+    document.getElementById("hero-region-desc").textContent =
+      `${top.region} menyumbang ${Math.round(top.count / totalReg * 100)}% dari seluruh titik panas nasional 30 hari terakhir — titik merah pada peta.`;
+  }
+
   const kpiHotspotEl = document.getElementById("kpi-hotspot");
   const kpiSiaga1El = document.getElementById("kpi-siaga1");
   const kpiPrecipEl = document.getElementById("kpi-precip");
@@ -587,15 +623,11 @@ function renderHero(data) {
   const totalHotspot = data.meta?.total_hotspots || 0;
   const avgPrecip = (ews.map_points || []).reduce((a, p) => a + (p.precip_mm || 0), 0) / Math.max(1, (ews.map_points || []).length);
   const auc = data.model?.auc_roc ?? 0;
-  onceVisible(document.querySelector(".hero-gauge-card"), () => {
-    requestAnimationFrame(() => {
-      arc.style.transition = "stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)";
-      arc.style.strokeDashoffset = offset;
-    });
-    animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1) + "%");
+  onceVisible(document.querySelector(".hero-card"), () => {
+    animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1));
   });
-  document.querySelectorAll(".kpi").forEach((kpiCard, idx) => {
-    onceVisible(kpiCard, () => {
+  document.querySelectorAll(".stat").forEach((statCard, idx) => {
+    onceVisible(statCard, () => {
       if (idx === 0) animateCountUp(kpiHotspotEl, totalHotspot, v => fmtNum(v));
       if (idx === 1) animateCountUp(kpiSiaga1El, siaga1, v => fmtNum(v));
       if (idx === 2) animateCountUp(kpiPrecipEl, avgPrecip, v => v.toFixed(1).replace(".", ","));

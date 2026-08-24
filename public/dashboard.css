@@ -46,7 +46,7 @@
         0 0 0 1px var(--shadow-ring),
         0 6px 14px -8px var(--shadow-soft);
     }
-    .topnav-outer::before{ height:91px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
+    .topnav-outer::before{ height:92px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
   }
   .brand{display:flex; align-items:center; gap:9px; flex-shrink:0;}
   .brand-mark{
@@ -142,29 +142,62 @@
   .card-title svg{width:15px; height:15px; color:var(--ember); flex-shrink:0;}
   .card-sub{font-size:12px; color:var(--text-faint); margin-top:2px; font-family:var(--font-mono);}
 
-  /* hero section */
+  /* hero section -- ringkasan, layout minimalis */
   .hero{padding-top:36px;}
-  .hero-grid{display:grid; grid-template-columns: 1.15fr 1fr; gap:18px;}
-  @media(max-width:980px){.hero-grid{grid-template-columns:1fr;}}
-  .hero-gauge-card{display:flex; align-items:center; gap:26px; padding:26px;}
-  .gauge-wrap{position:relative; width:158px; height:158px; flex-shrink:0;}
-  .gauge-wrap svg{width:100%; height:100%; transform:rotate(-90deg);}
-  .gauge-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .gauge-value{font-family:var(--font-display); font-size:34px; font-weight:700; letter-spacing:-0.02em;}
-  .gauge-label{font-size:10.5px; color:var(--text-faint); font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
-  .gauge-track{stroke:var(--bg-elev-2);}
-  .hero-info-title{font-family:var(--font-display); font-size:18px; font-weight:600; margin-bottom:6px;}
-  .hero-info-desc{color:var(--text-dim); font-size:13px; line-height:1.6; max-width:320px;}
-  .hero-status-badge{display:inline-flex; align-items:center; gap:7px; margin-top:14px; border-radius:999px; font-size:12px; font-weight:600; font-family:var(--font-mono);}
+  .kicker{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint); margin-bottom:14px;}
+  .kicker svg{width:13px; height:13px; color:var(--ember);}
+  .hero h2{font-family:var(--font-display); font-size:28px; font-weight:600; margin:0 0 4px; letter-spacing:-.01em; max-width:640px; line-height:1.35;}
 
-  /* kpi cards */
-  .kpi-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-  .kpi{padding:18px;}
-  .kpi-top{display:flex; align-items:center; justify-content:space-between;}
-  .kpi-icon{width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:var(--bg-elev-2); color:var(--ember);}
-  .kpi-icon svg{width:15px; height:15px;}
-  .kpi-value{font-family:var(--font-display); font-size:26px; font-weight:700; margin-top:14px; letter-spacing:-0.01em;}
-  .kpi-label{font-size:12px; color:var(--text-dim); margin-top:3px;}
+  .hero-card{
+    background:var(--bg);
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:28px 32px 34px;
+  }
+  .card-meta-row{display:flex; justify-content:flex-end; gap:28px; margin-bottom:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); flex-wrap:wrap;}
+  .card-meta-row div{text-align:right;}
+  .card-meta-row b{display:block; color:var(--text-dim); font-weight:500; font-size:12px; font-family:var(--font-body); margin-top:2px;}
+
+  .top-split{display:flex; align-items:stretch; gap:40px; padding:10px 0 30px;}
+  .map-col{flex:0 0 45%; max-width:45%; min-width:0; position:relative; display:flex; flex-direction:column; justify-content:center;}
+  .map-col svg.id-map{width:100%; height:auto; display:block; overflow:visible;}
+  .id-island{fill:var(--bg-elev-2); stroke:var(--border); stroke-width:0.4; stroke-linejoin:round;}
+
+  .compass{position:absolute; top:-4px; right:2px; display:flex; flex-direction:column; align-items:center; gap:3px; opacity:.5;}
+  .compass svg{width:14px; height:14px; color:var(--text-faint);}
+  .compass span{font-family:var(--font-mono); font-size:8px; letter-spacing:.06em; color:var(--text-faint);}
+  .coord-caption{font-family:var(--font-mono); font-size:9.5px; color:var(--text-faint); letter-spacing:.03em; margin-top:8px; display:flex; justify-content:space-between;}
+
+  .readout-col{flex:1; min-width:0; position:relative; padding-left:40px; display:flex; flex-direction:column; justify-content:center;}
+  .readout-col::before{content:''; position:absolute; left:0; top:0; bottom:0; width:1px; background:var(--border-soft);}
+  .readout-pct{font-family:var(--font-display); font-size:56px; font-weight:700; letter-spacing:-.02em; line-height:1; color:var(--text);}
+  .readout-pct span:last-child{font-size:20px; font-weight:500; color:var(--text-faint); margin-left:4px;}
+  .readout-label{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); margin-top:9px;}
+
+  .status-line{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text-dim); margin-top:18px; font-family:var(--font-mono); font-weight:600;}
+  .status-line svg{width:14px; height:14px; color:var(--siaga1); flex-shrink:0;}
+
+  .desc{display:flex; gap:9px; align-items:flex-start; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin-top:20px; padding-top:18px; border-top:1px solid var(--border-soft);}
+  .desc svg{width:14px; height:14px; color:var(--text-faint); flex-shrink:0; margin-top:1px;}
+
+  @media(max-width:980px){
+    .top-split{flex-direction:column; align-items:stretch; gap:0; padding:6px 0 24px;}
+    .map-col{flex:none; max-width:100%; width:100%; margin-bottom:22px; justify-content:flex-start;}
+    .map-col svg.id-map{max-width:320px; margin:0 auto; display:block;}
+    .compass{right:calc(50% - 160px + 2px);}
+    .readout-col{padding-left:0; justify-content:flex-start; border-top:1px solid var(--border-soft); padding-top:22px;}
+    .readout-col::before{display:none;}
+  }
+
+  /* statistik -- tanpa garis pembatas antar item, auto-reflow (nggak butuh breakpoint per-kolom) */
+  .stat-row{display:flex; flex-wrap:wrap; gap:28px 44px; margin-top:4px; padding-top:28px; border-top:1px solid var(--border-soft);}
+  .stat{flex:1 1 180px; min-width:150px;}
+  .stat-icon-wrap{width:32px; height:32px; border-radius:9px; background:var(--bg-elev-2); display:flex; align-items:center; justify-content:center; margin-bottom:14px; color:var(--ember);}
+  .stat-icon-wrap svg{width:15px; height:15px;}
+  .stat-value{font-family:var(--font-display); font-size:24px; font-weight:700; letter-spacing:-.01em;}
+  .stat-label{font-size:11.5px; color:var(--text-faint); margin-top:6px; line-height:1.5; max-width:170px;}
+
+  .hot-ring{fill:none; stroke:var(--siaga1); stroke-width:0.5; opacity:.4; transform-origin:center; transform-box:fill-box; animation:heroPulse 2.6s ease-in-out infinite;}
+  @keyframes heroPulse{0%,100%{transform:scale(1); opacity:.4;}50%{transform:scale(1.5); opacity:.08;}}
 
   /* grid layout & chart box */
   .grid-2{display:grid; grid-template-columns:1.3fr 1fr; gap:16px;}
@@ -900,15 +933,14 @@
     .section-desc{font-size:12.5px;}
     .section-head{flex-direction:column; align-items:flex-start; gap:12px;}
     .hero{padding-top:26px;}
-    .hero h2{font-size:21px !important;}
-    .hero-gauge-card{flex-direction:column; text-align:center; padding:22px 20px; gap:16px;}
-    .gauge-wrap{width:132px; height:132px;}
-    .hero-info-desc{max-width:100%;}
-    .hero-info-title{font-size:16px;}
-    .kpi-col{gap:10px;}
-    .kpi{padding:14px;}
-    .kpi-value{font-size:21px; margin-top:10px;}
-    .kpi-label{font-size:11.5px;}
+    .hero h2{font-size:19px !important;}
+    .hero-card{padding:20px 18px 22px;}
+    .card-meta-row{justify-content:flex-start; gap:18px; flex-wrap:wrap;}
+    .card-meta-row div{text-align:left;}
+    .readout-pct{font-size:42px;}
+    .stat-row{gap:22px 28px; padding-top:22px;}
+    .stat{flex:1 1 42%; min-width:130px;}
+    .stat-value{font-size:20px;}
     .map-toolbar{width:100%; flex-wrap:wrap; gap:8px;}
     .region-select{width:auto;}
     .region-select-trigger{width:auto; justify-content:flex-start;}
@@ -1056,16 +1088,15 @@
     .live-pill span:last-child{max-width:108px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
     .topnav-outer{ padding: 12px 10px 0; }
     .topnav{padding:8px 8px 8px 12px; gap:8px;}
-    .kpi-value{font-size:19px;}
-    .gauge-value{font-size:27px;}
+    .stat-value{font-size:18px;}
+    .readout-pct{font-size:36px;}
     .bottom-nav{left:10px; right:10px; padding:6px;}
     .bn-link{font-size:9px; padding:6px 1px;}
     .bn-link svg{width:18px; height:18px;}
 
     .card{ padding:14px; }
     .card-title{ font-size:13px; }
-    .kpi{ padding:12px; }
-    .kpi-label{ font-size:11px; }
+    .stat-label{ font-size:10.5px; }
     .chart-box{ height:210px; }
     .chart-box.tall{ height:250px; }
     .chart-box.short{ height:190px; }
