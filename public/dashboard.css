@@ -934,7 +934,7 @@
     .section-head{flex-direction:column; align-items:flex-start; gap:12px;}
     .hero{padding-top:26px;}
     .hero h2{font-size:19px !important;}
-    .hero-card{padding:20px 18px 22px;}
+    .hero-card{padding:20px 18px 22px;border:0px;}
     .card-meta-row{justify-content:flex-start; gap:18px; flex-wrap:wrap;}
     .card-meta-row div{text-align:left;}
     .readout-pct{font-size:42px;}
