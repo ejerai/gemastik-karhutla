@@ -408,6 +408,46 @@ function onceVisible(el, fn, opts) {
   io.observe(el);
 }
 
+/* sama seperti onceVisible, tapi WAJIB ada aksi scroll dulu dari user --
+   di layar tinggi/lebar, elemen target bisa saja sudah masuk viewport
+   sejak halaman pertama dimuat (tanpa perlu scroll sama sekali), yang
+   bikin onceVisible biasa langsung nembak di awal. Ini nunggu window
+   benar-benar discroll dulu sebelum ngecek visibilitas. */
+function onceVisibleAfterScroll(el, fn, opts) {
+  if (!el) return;
+  if (!("IntersectionObserver" in window)) {
+    fn();
+    return;
+  }
+  let scrolled = window.scrollY > 4 || window.pageYOffset > 4;
+  let fired = false;
+  const threshold = (opts && opts.threshold) ?? .35;
+
+  function tryFire() {
+    if (fired || !scrolled) return;
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const visible = Math.max(0, Math.min(rect.bottom, vh) - Math.max(rect.top, 0));
+    if (rect.height > 0 && visible / rect.height >= threshold) {
+      fired = true;
+      fn();
+      io.unobserve(el);
+      window.removeEventListener("scroll", onScroll);
+    }
+  }
+  function onScroll() {
+    scrolled = true;
+    tryFire();
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) tryFire();
+    });
+  }, Object.assign({ threshold, rootMargin: "0px 0px -6% 0px" }, opts || {}));
+  io.observe(el);
+  window.addEventListener("scroll", onScroll, { passive: true });
+}
+
 function animateCountUp(el, targetValue, formatFn, duration) {
   if (!el) return;
   duration = duration || 1300;
@@ -571,6 +611,51 @@ const REGION_MAP_COORDS = {
   "Maluku": { x: 723.1, y: 539.4 }
 };
 
+/* animasi peta "digambar" saat section Ringkasan pertama kali masuk layar --
+   tiap pulau di-stroke berurutan (bukan barengan) pakai easing cubic yang halus,
+   fill warnanya fade-in begitu garis pantainya kelar, baru titik hotspot pop-in
+   di akhir. Total durasinya dikembalikan supaya angka-angka (gauge + 4 statistik)
+   bisa disetel selesai counting-up di waktu yang sama persis. */
+function animateHeroMap() {
+  const paths = Array.from(document.querySelectorAll("#islandGroup path"));
+  const dotsEl = document.getElementById("hero-map-dots");
+  if (!paths.length) return 1300;
+
+  const items = paths.map(path => {
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    return { path, len, duration: Math.max(90, len * 4.5) };
+  });
+  const gap = 20;
+  const totalDuration = items.reduce((s, it) => s + it.duration, 0) + gap * items.length;
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  let startTime = null;
+  let idx = 0;
+  let elapsedBefore = 0;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    if (idx >= items.length) {
+      dotsEl?.classList.add("shown");
+      return;
+    }
+    const it = items[idx];
+    const localElapsed = ts - startTime - elapsedBefore;
+    const t = Math.min(1, localElapsed / it.duration);
+    const drawnLen = it.len * ease(t);
+    it.path.style.strokeDashoffset = it.len - drawnLen;
+    if (t >= 1) {
+      it.path.classList.add("drawn");
+      elapsedBefore += it.duration + gap;
+      idx++;
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  return totalDuration;
+}
+
 function renderHero(data) {
   const ews = data.ews || {};
   const nat = data.national || {};
@@ -623,16 +708,17 @@ function renderHero(data) {
   const totalHotspot = data.meta?.total_hotspots || 0;
   const avgPrecip = (ews.map_points || []).reduce((a, p) => a + (p.precip_mm || 0), 0) / Math.max(1, (ews.map_points || []).length);
   const auc = data.model?.auc_roc ?? 0;
-  onceVisible(document.querySelector(".hero-card"), () => {
-    animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1));
-  });
-  document.querySelectorAll(".stat").forEach((statCard, idx) => {
-    onceVisible(statCard, () => {
-      if (idx === 0) animateCountUp(kpiHotspotEl, totalHotspot, v => fmtNum(v));
-      if (idx === 1) animateCountUp(kpiSiaga1El, siaga1, v => fmtNum(v));
-      if (idx === 2) animateCountUp(kpiPrecipEl, avgPrecip, v => v.toFixed(1).replace(".", ","));
-      if (idx === 3) animateCountUp(kpiAucEl, auc, v => v.toFixed(3).replace(".", ","));
-    });
+
+  // grup 1: peta + persentase -- langsung jalan begitu halaman dibuka, TANPA nunggu scroll
+  const mapDuration = animateHeroMap();
+  animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1), mapDuration);
+
+  // grup 2: 4 kartu statistik -- baru jalan begitu user scroll sampai kartunya kelihatan
+  onceVisibleAfterScroll(document.querySelector(".stat-row"), () => {
+    animateCountUp(kpiHotspotEl, totalHotspot, v => fmtNum(v));
+    animateCountUp(kpiSiaga1El, siaga1, v => fmtNum(v));
+    animateCountUp(kpiPrecipEl, avgPrecip, v => v.toFixed(1).replace(".", ","));
+    animateCountUp(kpiAucEl, auc, v => v.toFixed(3).replace(".", ","));
   });
   document.getElementById("map-date-label").textContent = "Tanggal analisis: " + (ews.target_date || "-");
   const note = document.getElementById("map-sampling-note");
@@ -1763,7 +1849,8 @@ function renderCoordSuggestions() {
 function adjustSuggestMaxHeight() {
   const box = document.getElementById("coord-suggest");
   if (!box || !box.classList.contains("open")) return;
-
+  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
+  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
   if (window.innerWidth <= 700) {
     box.style.maxHeight = "";
     return;
@@ -1813,7 +1900,7 @@ if (!window.__suggestResizeBound) {
   });
 })();
 
-// nav link header (desktop)
+// Nav link header (desktop)
 const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;

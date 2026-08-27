@@ -46,7 +46,7 @@
         0 0 0 1px var(--shadow-ring),
         0 6px 14px -8px var(--shadow-soft);
     }
-    .topnav-outer::before{ height:92px; background: linear-gradient(180deg, var(--bg) 68%, transparent); }
+    .topnav-outer::before{ height:92px; background:linear-gradient(180deg, var(--bg) 68%, transparent);}
   }
   .brand{display:flex; align-items:center; gap:9px; flex-shrink:0;}
   .brand-mark{
@@ -160,7 +160,10 @@
   .top-split{display:flex; align-items:stretch; gap:40px; padding:10px 0 30px;}
   .map-col{flex:0 0 45%; max-width:45%; min-width:0; position:relative; display:flex; flex-direction:column; justify-content:center;}
   .map-col svg.id-map{width:100%; height:auto; display:block; overflow:visible;}
-  .id-island{fill:var(--bg-elev-2); stroke:var(--border); stroke-width:0.4; stroke-linejoin:round;}
+  .id-island path{fill:var(--bg-elev-2); stroke:var(--border); stroke-width:0.6; stroke-linejoin:round; stroke-linecap:round; fill-opacity:0;}
+  .id-island path.drawn{fill-opacity:1; transition:fill-opacity .5s ease;}
+  .hero-dots{opacity:0; transform:scale(.6); transform-origin:center; transform-box:fill-box; transition:opacity .5s ease, transform .5s cubic-bezier(.34,1.56,.64,1);}
+  .hero-dots.shown{opacity:1; transform:scale(1);}
 
   .compass{position:absolute; top:-4px; right:2px; display:flex; flex-direction:column; align-items:center; gap:3px; opacity:.5;}
   .compass svg{width:14px; height:14px; color:var(--text-faint);}
@@ -181,16 +184,17 @@
 
   @media(max-width:980px){
     .top-split{flex-direction:column; align-items:stretch; gap:0; padding:6px 0 24px;}
-    .map-col{flex:none; max-width:100%; width:100%; margin-bottom:22px; justify-content:flex-start;}
-    .map-col svg.id-map{max-width:320px; margin:0 auto; display:block;}
-    .compass{right:calc(50% - 160px + 2px);}
+    .map-col{flex:none; max-width:320px; width:100%; margin:0 auto 22px; justify-content:flex-start;}
+    .map-col svg.id-map{width:100%; margin:0; display:block;}
     .readout-col{padding-left:0; justify-content:flex-start; border-top:1px solid var(--border-soft); padding-top:22px;}
     .readout-col::before{display:none;}
   }
 
   /* statistik -- tanpa garis pembatas antar item, auto-reflow (nggak butuh breakpoint per-kolom) */
-  .stat-row{display:flex; flex-wrap:wrap; gap:28px 44px; margin-top:4px; padding-top:28px; border-top:1px solid var(--border-soft);}
-  .stat{flex:1 1 180px; min-width:150px;}
+  .stat-row{display:grid; grid-template-columns:repeat(4, 1fr); gap:0; margin-top:4px; padding-top:28px; border-top:1px solid var(--border-soft);}
+  .stat{min-width:0; padding:0 20px; border-left:1px solid var(--border-soft);}
+  .stat:nth-child(4n+1){border-left:none; padding-left:0;}
+  .stat:last-child{padding-right:0;}
   .stat-icon-wrap{width:32px; height:32px; border-radius:9px; background:var(--bg-elev-2); display:flex; align-items:center; justify-content:center; margin-bottom:14px; color:var(--ember);}
   .stat-icon-wrap svg{width:15px; height:15px;}
   .stat-value{font-family:var(--font-display); font-size:24px; font-weight:700; letter-spacing:-.01em;}
@@ -933,13 +937,27 @@
     .section-desc{font-size:12.5px;}
     .section-head{flex-direction:column; align-items:flex-start; gap:12px;}
     .hero{padding-top:26px;}
-    .hero h2{font-size:19px !important;}
-    .hero-card{padding:20px 18px 22px;border:0px;}
+    .hero h2{font-size:21px !important;}
+    .hero-card{background:transparent; border:none; border-radius:0; border-bottom:1px solid var(--border-soft); padding:18px 0 24px;}
     .card-meta-row{justify-content:flex-start; gap:18px; flex-wrap:wrap;}
     .card-meta-row div{text-align:left;}
     .readout-pct{font-size:42px;}
-    .stat-row{gap:22px 28px; padding-top:22px;}
-    .stat{flex:1 1 42%; min-width:130px;}
+    .stat-row{
+      display:flex;
+      flex-direction:column;
+      border-top:none;
+      padding-top:0;
+      margin-top:0;
+    }
+    .stat{
+      display:flex;
+      flex-direction:column;
+      padding:24px 2px;
+      border-top:1px solid var(--border-soft);
+      border-left:none;
+    }
+    .stat-icon-wrap{margin-bottom:16px;}
+    .stat-label{max-width:none;}
     .stat-value{font-size:20px;}
     .map-toolbar{width:100%; flex-wrap:wrap; gap:8px;}
     .region-select{width:auto;}
