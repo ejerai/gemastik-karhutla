@@ -709,11 +709,11 @@ function renderHero(data) {
   const avgPrecip = (ews.map_points || []).reduce((a, p) => a + (p.precip_mm || 0), 0) / Math.max(1, (ews.map_points || []).length);
   const auc = data.model?.auc_roc ?? 0;
 
-  // grup 1: peta + persentase -- langsung jalan begitu halaman dibuka, TANPA nunggu scroll
+  // grup 1: peta + persentase
   const mapDuration = animateHeroMap();
   animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1), mapDuration);
 
-  // grup 2: 4 kartu statistik -- baru jalan begitu user scroll sampai kartunya kelihatan
+  // grup 2: 4 kartu statistik
   onceVisibleAfterScroll(document.querySelector(".stat-row"), () => {
     animateCountUp(kpiHotspotEl, totalHotspot, v => fmtNum(v));
     animateCountUp(kpiSiaga1El, siaga1, v => fmtNum(v));
@@ -1849,8 +1849,7 @@ function renderCoordSuggestions() {
 function adjustSuggestMaxHeight() {
   const box = document.getElementById("coord-suggest");
   if (!box || !box.classList.contains("open")) return;
-  // Cuma perlu dihitung manual di desktop fullscreen -- di mobile CSS
-  // (max-height:280px) sudah aman karena legend jadi bottom-sheet terpisah.
+
   if (window.innerWidth <= 700) {
     box.style.maxHeight = "";
     return;
@@ -1900,7 +1899,7 @@ if (!window.__suggestResizeBound) {
   });
 })();
 
-// Nav link header (desktop)
+// nav link header (desktop)
 const navAnchors = document.querySelectorAll(".nav-links a");
 
 const hrefToSection = new Map;

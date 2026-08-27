@@ -384,7 +384,7 @@
   .coord-suggest-item .risk{flex-shrink:0; font-size:11px; font-weight:700; color:var(--siaga1);}
 
   @media (max-width:700px){
-    /* Search box  */
+    /* search box  */
     .coord-search-overlay{left:12px; right:12px; top:16px; width:auto;}
     .coord-suggest-label{display:none;}
     .coord-search input{font-size:16px !important;}
@@ -750,16 +750,13 @@
   }
   .clsf-head > span:first-child{ font-family:var(--font-body); }
 
-  /* catatan penjelas EDA (curah hujan / korelasi) -- teks kecil statis
-     di bawah tiap chart, konsisten sama gaya .clsf-note-text */
+  /* catatan penjelas EDA */
   .eda-note-text{
     margin-top:12px; padding-top:12px; border-top:1px dashed var(--border);
     font-size:.79rem; line-height:1.6; color:var(--text-dim);
   }
 
-  /* list korelasi -- pengganti chart sumbu-nol: baris biasa dari atas
-     ke bawah, label kiri tetap, bar tumbuh kiri->kanan, nilai di kanan.
-     Tidak ada sumbu yang perlu ditafsir arahnya. */
+  /* list korelasi */
   .corr-fire-list{ margin-top:16px; display:flex; flex-direction:column; gap:13px; }
   .corr-row{
     display:grid; grid-template-columns:118px 1fr 46px; align-items:center; gap:10px;
@@ -781,10 +778,10 @@
     .corr-row{ grid-template-columns:96px 1fr 42px; }
   }
 
-  /* === Analitik Nasional -- komponen ramah awam (bukan chart canvas) === */
+  /* analitik nasional */
   .nas-hint{ font-size:.79rem; color:var(--text-dim); margin:0 0 14px; }
 
-  /* kartu ringkasan bahasa manusia di atas section */
+  /* kartu ringkasan */
   .nas-summary-card{
     display:flex; gap:12px; align-items:flex-start;
     padding:16px 18px; border-radius:12px;
@@ -794,14 +791,14 @@
   .nas-summary-card p{ margin:0; font-size:.86rem; line-height:1.65; color:var(--text); }
   .nas-summary-card strong{ color:var(--ember-light); font-weight:600; }
 
-  /* ranking wilayah -- baris utama (wilayah #1) */
+  /* ranking wilayah */
   .rr-top{ display:flex; align-items:center; gap:9px; margin-bottom:8px; flex-wrap:wrap; }
   .rr-top-icon{ width:17px; height:17px; color:var(--ember); flex-shrink:0; }
   .rr-top-name{ font-size:.92rem; font-weight:600; color:var(--text); flex:1; min-width:0; }
   .rr-top-pct{ font-family:var(--font-display); font-size:1.15rem; font-weight:700; color:var(--text); }
   .rr-track{ height:8px; border-radius:4px; background:var(--bg-elev-2); overflow:hidden; margin-bottom:18px; }
   .rr-fill{ height:100%; background:var(--ember); border-radius:4px; }
-  /* ranking wilayah -- daftar sisanya, semua wilayah ditampilkan (bukan digrup) */
+  /* ranking wilayah */
   .rr-list{ display:flex; flex-direction:column; gap:10px; }
   .rr-list-row{ display:grid; grid-template-columns:104px 1fr 34px; align-items:center; gap:10px; }
   .rr-list-name{ font-size:.76rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -840,10 +837,7 @@
     .rr-list-row{ grid-template-columns:88px 1fr 32px; gap:8px; }
   }
 
-  /* catatan class-imbalance: kartu catatan modern.
-     Default (mobile-first): kartu statis, selalu tampil, menempel di bawah tabel.
-     Di perangkat dengan hover asli (desktop/mouse): kartu jadi popover mengambang
-     yang muncul saat JUDUL card di-hover atau di-focus, bukan lagi teks trigger. */
+  /* catatan class-imbalance */
   .clsf-card{ position:relative; }
   .clsf-title{ transition:color .2s ease; }
 
