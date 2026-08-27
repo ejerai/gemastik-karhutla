@@ -496,7 +496,7 @@ let BASE_LAYER = null, LABEL_LAYER = null;
 
 const BASEMAPS = {
   dark: {
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=" + (window.CARTO_API_KEY || ""),
     options: { attribution: "&copy; OpenStreetMap &copy; CARTO", subdomains: "abcd", maxZoom: 19 }
   },
   light: {

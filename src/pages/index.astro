@@ -462,6 +462,7 @@
 </div>
 
 <!-- dashboard script -->
+<script define:vars={{ cartoKey: import.meta.env.PUBLIC_CARTO_API_KEY }}>window.CARTO_API_KEY = cartoKey;</script>
 <script is:inline src="/dashboard.js"></script>
 </body>
 </html>
