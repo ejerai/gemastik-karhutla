@@ -408,11 +408,6 @@ function onceVisible(el, fn, opts) {
   io.observe(el);
 }
 
-/* sama seperti onceVisible, tapi WAJIB ada aksi scroll dulu dari user --
-   di layar tinggi/lebar, elemen target bisa saja sudah masuk viewport
-   sejak halaman pertama dimuat (tanpa perlu scroll sama sekali), yang
-   bikin onceVisible biasa langsung nembak di awal. Ini nunggu window
-   benar-benar discroll dulu sebelum ngecek visibilitas. */
 function onceVisibleAfterScroll(el, fn, opts) {
   if (!el) return;
   if (!("IntersectionObserver" in window)) {
@@ -599,10 +594,7 @@ function renderNav(data) {
   }
 }
 
-/* koordinat pusat tiap pulau pada path peta Indonesia (viewBox "633 505 130 70"),
-   diambil dari data geografis nyata -- dipakai buat naruh titik hotspot proporsional
-   ke persentase regional asli, bukan taruh sembarangan. "Lainnya" sengaja dilewati
-   karena nggak punya 1 lokasi tetap. */
+/* koordinat pusat tiap pulau */
 const REGION_MAP_COORDS = {
   "Kalimantan": { x: 685.3, y: 531.4 },
   "Papua": { x: 739.8, y: 546.9 },
@@ -613,11 +605,7 @@ const REGION_MAP_COORDS = {
   "Maluku": { x: 723.1, y: 539.4 }
 };
 
-/* animasi peta "digambar" saat section Ringkasan pertama kali masuk layar --
-   tiap pulau di-stroke berurutan (bukan barengan) pakai easing cubic yang halus,
-   fill warnanya fade-in begitu garis pantainya kelar, baru titik hotspot pop-in
-   di akhir. Total durasinya dikembalikan supaya angka-angka (gauge + 4 statistik)
-   bisa disetel selesai counting-up di waktu yang sama persis. */
+/* animasi peta */
 function animateHeroMap() {
   const paths = Array.from(document.querySelectorAll("#islandGroup path"));
   const dotsEl = document.getElementById("hero-map-dots");
@@ -1149,11 +1137,8 @@ function renderProjection(data) {
   });
 }
 
-/* Kelompokkan grid rawan yang berdekatan (radius ~0.5 derajat, ~55km) jadi
-   satu baris representatif + jumlah sel serupa -- daripada menampilkan
-   10-20 sel bertetangga dari 1 klaster yang sama seolah-olah itu 10-20
-   lokasi berbeda se-Indonesia. */
-function clusterHazardRows(rows, radiusDeg = 0.5) {
+/* kelompok grid rawan yang berdekatan */
+function clusterHazardRows(rows, radiusDeg = 0.2) {
   const reps = [];
   for (const r of rows) {
     const near = reps.find(rep => Math.hypot(rep.point.lat - r.lat, rep.point.lon - r.lon) <= radiusDeg);

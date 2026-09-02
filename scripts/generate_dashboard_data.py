@@ -438,7 +438,7 @@ def build_ews(model, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
             "risk_score": round(float(r.risk_score), 2),
             "status": r.status,
         }
-        for r in today.sort_values("risk_score", ascending=False).head(20).itertuples(index=False)
+        for r in today.sort_values("risk_score", ascending=False).head(45).itertuples(index=False)
     ]
 
     mean_risk = float(today["risk_score"].mean())

@@ -156,7 +156,7 @@
   .card-title svg{width:15px; height:15px; color:var(--ember); flex-shrink:0;}
   .card-sub{font-size:12px; color:var(--text-faint); margin-top:2px; font-family:var(--font-mono);}
 
-  /* hero section -- ringkasan, layout minimalis */
+  /* hero section -- ringkasan, layout */
   .hero{padding-top:36px;}
   .kicker{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-faint); margin-bottom:14px;}
   .kicker svg{width:13px; height:13px; color:var(--ember);}
@@ -204,7 +204,7 @@
     .readout-col::before{display:none;}
   }
 
-  /* statistik -- tanpa garis pembatas antar item, auto-reflow (nggak butuh breakpoint per-kolom) */
+  /* statistik */
   .stat-row{display:grid; grid-template-columns:repeat(4, 1fr); gap:0; margin-top:4px; padding-top:28px; border-top:1px solid var(--border-soft);}
   .stat{min-width:0; padding:0 20px; border-left:1px solid var(--border-soft);}
   .stat:nth-child(4n+1){border-left:none; padding-left:0;}
