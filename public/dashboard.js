@@ -583,7 +583,9 @@ function tickNavUpdated() {
     let color = "#5fd98a"; // safe/hijau
     if (deltaHours >= 24) color = "#ef5350"; // danger/merah
     else if (deltaHours >= 6) color = "#f2b84b"; // warn/kuning
-    dot.style.background = color;
+    // pakai custom property biar titik utama & 2 "jejak" gemanya (::before/::after)
+    // selalu sinkron warnanya -- pseudo-element nggak ikut baca dot.style.background langsung
+    dot.style.setProperty("--live-dot-color", color);
     dot.style.boxShadow = `0 0 0 3px ${color}2e`;
   }
 }
@@ -709,11 +711,11 @@ function renderHero(data) {
   const avgPrecip = (ews.map_points || []).reduce((a, p) => a + (p.precip_mm || 0), 0) / Math.max(1, (ews.map_points || []).length);
   const auc = data.model?.auc_roc ?? 0;
 
-  // grup 1: peta + persentase
+  // grup 1: peta + persentase -- langsung jalan begitu halaman dibuka, TANPA nunggu scroll
   const mapDuration = animateHeroMap();
   animateCountUp(gaugeValueEl, risk * 100, v => v.toFixed(1), mapDuration);
 
-  // grup 2: 4 kartu statistik
+  // grup 2: 4 kartu statistik -- baru jalan begitu user scroll sampai kartunya kelihatan
   onceVisibleAfterScroll(document.querySelector(".stat-row"), () => {
     animateCountUp(kpiHotspotEl, totalHotspot, v => fmtNum(v));
     animateCountUp(kpiSiaga1El, siaga1, v => fmtNum(v));

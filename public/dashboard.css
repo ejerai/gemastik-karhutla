@@ -71,8 +71,22 @@
     padding:6px 11px; border:1px solid var(--hairline-08); border-radius:999px; background:var(--veil);
     white-space:nowrap; flex-shrink:0;
   }
-  .live-dot{width:6px; height:6px; border-radius:50%; background:#5fd98a; box-shadow:0 0 0 3px rgba(95,217,138,0.18); animation: blink 2.4s ease-in-out infinite; flex-shrink:0;}
-  @keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .live-dot{
+    position:relative; width:6px; height:6px; border-radius:50%;
+    background: var(--live-dot-color, #5fd98a);
+    box-shadow:0 0 0 3px rgba(95,217,138,0.18);
+    flex-shrink:0;
+  }
+  .live-dot::before, .live-dot::after{
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background: var(--live-dot-color, #5fd98a);
+    animation: liveEcho 1.6s cubic-bezier(.2,.8,.2,1) infinite;
+  }
+  .live-dot::after{ animation-delay:.35s; }
+  @keyframes liveEcho{
+    0%{ transform:translateX(0); opacity:.5; }
+    100%{ transform:translateX(-9px); opacity:0; }
+  }
   .icon-btn{width:30px; height:30px; border-radius:999px; border:1px solid var(--hairline-08); background:var(--veil); display:flex; align-items:center; justify-content:center; color:var(--text-dim); cursor:pointer; transition:.15s; flex-shrink:0;}
   .icon-btn:hover{color:var(--text); border-color:var(--hairline-hover); background:var(--hover-tint);}
   .icon-btn svg{width:14px; height:14px;}
