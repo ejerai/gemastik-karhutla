@@ -27,6 +27,7 @@ from xgboost import XGBClassifier
 
 sys.path.insert(0, str(Path(__file__).parent))
 from regions import classify_region_vectorized  # noqa: E402
+from id_boundary import is_indonesia_vectorized  # noqa: E402
 
 # Konfigurasi
 SCRIPT_DIR = Path(__file__).parent
@@ -130,16 +131,11 @@ def load_raw():
             f"({rt_gpm.acq_date.min().date()} s/d {rt_gpm.acq_date.max().date()}) -- digabung ke arsip")
 
     n_before = gpm[["lat_grid", "lon_grid"]].drop_duplicates().shape[0]
-    try:
-        from global_land_mask import globe
-        is_land = globe.is_land(gpm["lat_grid"].to_numpy(), gpm["lon_grid"].to_numpy())
-        gpm = gpm[is_land].reset_index(drop=True)
-        n_after = gpm[["lat_grid", "lon_grid"]].drop_duplicates().shape[0]
-        log(f"  filter darat  : {n_after:,} dari {n_before:,} sel grid ({n_after/n_before*100:.1f}%) "
-            f"-- sel laut dibuang (curah hujan di tengah laut tidak relevan buat risiko karhutla)")
-    except ImportError:
-        log("  PERINGATAN: paket 'global-land-mask' tidak terpasang, grid TIDAK difilter "
-            "ke darat. Jalankan: pip install global-land-mask")
+    is_id = is_indonesia_vectorized(gpm["lat_grid"].to_numpy(), gpm["lon_grid"].to_numpy())
+    gpm = gpm[is_id].reset_index(drop=True)
+    n_after = gpm[["lat_grid", "lon_grid"]].drop_duplicates().shape[0]
+    log(f"  filter wilayah Indonesia: {n_after:,} dari {n_before:,} sel grid ({n_after/n_before*100:.1f}%) "
+        f"-- sel laut & sel di negara lain (mis. Malaysia/Brunei/PNG yang ikut kesenggol BBOX) dibuang")
 
     log(f"  fire historis : {len(fire_hist):,} baris "
         f"({fire_hist.acq_date.min().date()} s/d {fire_hist.acq_date.max().date()})")
@@ -572,6 +568,14 @@ def build_national(fire_hist: pd.DataFrame, fire_rt: pd.DataFrame):
 def build_realtime(fire_rt: pd.DataFrame, gpm_feat: pd.DataFrame, target_date: pd.Timestamp):
     log("Menyusun blok realtime (hotspot terbaru & area kering)...")
     rt = fire_rt.dropna(subset=["frp"]).copy()
+
+    n_before = len(rt)
+    is_id = is_indonesia_vectorized(rt["latitude"].to_numpy(), rt["longitude"].to_numpy())
+    rt = rt[is_id].copy()
+    log(f"  filter wilayah Indonesia (hotspot realtime): {len(rt):,} dari {n_before:,} baris "
+        f"-- BBOX fetch FIRMS sengaja dibiarkan longgar, jadi hotspot Malaysia/Brunei/PNG/"
+        f"Timor-Leste yang ikut kefetch dibuang di sini sebelum masuk daftar 'top hotspot'")
+
     rt["region"] = classify_region_vectorized(rt["latitude"], rt["longitude"])
     rt["confidence_norm"] = rt["confidence"].apply(normalize_confidence)
     rt["daynight_id"] = rt["daynight"].map({"D": "Siang", "N": "Malam"}).fillna("Siang")

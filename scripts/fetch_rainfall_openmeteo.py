@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 from pathlib import Path
 from datetime import datetime, timezone
@@ -14,6 +15,8 @@ import pandas as pd
 import requests
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR))
+from id_boundary import is_indonesia_vectorized  # noqa: E402
 DATA_DIR = SCRIPT_DIR.parent / "data"
 BASE_PARQUET = DATA_DIR / "gpm_indonesia_combined.parquet"
 OUT_PATH = DATA_DIR / "gpm_realtime_recent.parquet"
@@ -68,15 +71,11 @@ def build_grid_points() -> list[tuple[float, float]]:
         )
 
     n_before = len(pts)
-    try:
-        from global_land_mask import globe
-        is_land = globe.is_land(pts["lat"].to_numpy(), pts["lon"].to_numpy())
-        pts = pts[is_land]
-        log(f"  Filter darat: {len(pts):,} dari {n_before:,} sel ({len(pts)/n_before*100:.1f}%) "
-            f"-- sel laut dibuang, tidak relevan buat risiko karhutla.")
-    except ImportError:
-        log("  PERINGATAN: paket 'global-land-mask' tidak terpasang, grid TIDAK difilter "
-            "ke darat (masih termasuk ~76% sel laut). Jalankan: pip install global-land-mask")
+    is_id = is_indonesia_vectorized(pts["lat"].to_numpy(), pts["lon"].to_numpy())
+    pts = pts[is_id]
+    log(f"  Filter wilayah Indonesia: {len(pts):,} dari {n_before:,} sel ({len(pts)/n_before*100:.1f}%) "
+        f"-- sel laut & sel di negara lain (Malaysia/Brunei/PNG/Timor-Leste yang kesenggol BBOX) "
+        f"dibuang di sini, jadi kuota Open-Meteo tidak kebuang buat sel di luar Indonesia.")
 
     return list(pts.itertuples(index=False, name=None))
 
