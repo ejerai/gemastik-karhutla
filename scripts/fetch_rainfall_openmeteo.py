@@ -210,6 +210,16 @@ def main() -> None:
         log("Hasil akhir kosong (tidak ada data baru maupun lama). Berhenti tanpa menulis file.")
         raise SystemExit(1)
 
+    n_before_clean = merged[["lat", "lon"]].drop_duplicates().shape[0]
+    is_id_merged = is_indonesia_vectorized(merged["lat"].to_numpy(), merged["lon"].to_numpy())
+    n_dropped = (~is_id_merged).sum()
+    if n_dropped > 0:
+        merged = merged[is_id_merged].reset_index(drop=True)
+        n_after_clean = merged[["lat", "lon"]].drop_duplicates().shape[0]
+        log(f"  Bersihkan sisa sel non-Indonesia dari file lama: {n_dropped:,} baris dibuang "
+            f"({n_before_clean:,} -> {n_after_clean:,} sel unik). Ini cuma perlu sekali sampai "
+            f"histori lama bersih total; run-run berikutnya harusnya 0.")
+
     n_cells_final = merged[["lat", "lon"]].drop_duplicates().shape[0]
     n_cells_this_shard = merged.merge(
         pd.DataFrame(points, columns=["lat", "lon"]), on=["lat", "lon"]
