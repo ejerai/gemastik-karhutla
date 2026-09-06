@@ -229,6 +229,16 @@ def main() -> None:
     log(f"  Cakupan grid darat NASIONAL (akumulasi semua shard sejauh ini): "
         f"{n_cells_final:,} dari {len(all_points):,} sel ({n_cells_final/len(all_points)*100:.1f}%)")
 
+    n_before_trim = len(merged)
+    today_ts = pd.Timestamp(datetime.now(timezone.utc).date())
+    lower_cutoff = today_ts - pd.Timedelta(days=20)
+    upper_cutoff = today_ts + pd.Timedelta(days=10)
+    merged = merged[(merged["acq_date"] >= lower_cutoff) & (merged["acq_date"] <= upper_cutoff)]
+    if len(merged) < n_before_trim:
+        log(f"  Retensi jendela [{lower_cutoff.date()}, {upper_cutoff.date()}]: "
+            f"buang {n_before_trim - len(merged):,} baris di luar jendela "
+            f"({n_before_trim:,} -> {len(merged):,} baris).")
+
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     merged.to_parquet(OUT_PATH, index=False)
     log(f"Selesai. {len(merged):,} baris disimpan ke {OUT_PATH} "
