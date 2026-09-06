@@ -22,11 +22,6 @@ datasets/data_gpm_indonesia/
 datasets/data_gpm_realtime/
 *.nc4
 
-# Tambalan data realtime hasil fetch (digenerate ulang tiap workflow jalan,
-# tidak perlu jadi riwayat di git -- cukup public/dashboard_data.json saja
-# yang di-commit sebagai hasil akhirnya)
-data/gpm_realtime_recent.parquet
-
 # Jupyter Checkpoints
 .ipynb_checkpoints/
 
