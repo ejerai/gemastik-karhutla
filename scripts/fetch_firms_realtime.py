@@ -16,10 +16,10 @@ SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent / "data"
 BBOX = "95.0,-11.0,141.0,6.0"
 
+# sensor yang dipakai. VIIRS resolusinya lebih baik (375m) dibanding MODIS (1km).
 SOURCES = ["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT"]
 MAX_DAY_RANGE = 5
-N_WINDOWS = 3  # 3 x 5 hari = cakupan 15 hari ke belakang
-
+N_WINDOWS = 3
 TARGET_COLUMNS = [
     "latitude", "longitude", "bright_ti4", "scan", "track", "acq_date",
     "acq_time", "satellite", "instrument", "confidence", "version",
@@ -130,7 +130,8 @@ def main() -> None:
     merged = merged.drop_duplicates(subset=["latitude", "longitude", "acq_date", "acq_time", "satellite"])
 
     n_before_trim = len(merged)
-    retention_days = N_WINDOWS * MAX_DAY_RANGE + 2
+    retention_days = 32
+
     cutoff = pd.Timestamp(datetime.now(timezone.utc).date()) - timedelta(days=retention_days)
     merged["acq_date"] = pd.to_datetime(merged["acq_date"])
     merged = merged[merged["acq_date"] >= cutoff]
