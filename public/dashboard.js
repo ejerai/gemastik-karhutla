@@ -1249,8 +1249,7 @@ function renderNational(data) {
         <span><span class="tm-dot" style="background:${SAFE};"></span>Layak dipercaya ${reliablePct}%</span>
         <span><span class="tm-dot" style="background:${WARN};"></span>Perlu dicek ulang ${confPct.low}%</span>
       </div>
-      <p class="nas-hint" style="margin:16px 0 0;">Rincian dari yang "layak dipercaya": ${confPct.nominal}% kategori <b>standar</b> dan ${confPct.high}% kategori <b>sangat yakin</b> — dua-duanya sama-sama valid. "Standar" itu memang kategori paling umum dari sensor satelit VIIRS, bukan tanda kurang meyakinkan.</p>
-      <p class="nas-hint" style="margin:8px 0 0;">Kalau lagi buru-buru, cukup lihat angka besar di atas — itu sudah gabungan titik yang layak dipercaya.</p>`;
+      <p class="nas-hint" style="margin:16px 0 0;">Gabungan kategori <b>standar</b> (${confPct.nominal}%) + <b>sangat yakin</b> (${confPct.high}%) dari sensor VIIRS — "standar" itu kategori paling umum, bukan tanda kurang meyakinkan.</p>`;
   }
 
   const dn = nat.daynight || {};
