@@ -1235,22 +1235,22 @@ function renderNational(data) {
   const conf = nat.confidence || {};
   const totalConf = Object.values(conf).reduce((a, b) => a + b, 0) || 1;
   const confPct = { nominal: Math.round((conf.nominal || 0) / totalConf * 100), low: Math.round((conf.low || 0) / totalConf * 100), high: Math.round((conf.high || 0) / totalConf * 100) };
+  const reliablePct = confPct.nominal + confPct.high;
   const trustEl = document.getElementById("trust-meter");
   if (trustEl) {
     trustEl.innerHTML = `
       <p class="nas-hint">Seberapa yakin sistem titik panas ini kebakaran beneran</p>
-      <div class="tm-headline"><span class="tm-num">${confPct.high}%</span><span class="nas-hint" style="margin:0;">terverifikasi tinggi (high)</span></div>
+      <div class="tm-headline"><span class="tm-num">${reliablePct}%</span><span class="nas-hint" style="margin:0;">titik panas layak dipercaya</span></div>
       <div class="tm-track">
-        <div style="flex:${confPct.high || 1};background:${SAFE};"></div>
-        <div style="flex:${confPct.nominal || 1};background:${WARN};"></div>
-        <div style="flex:${confPct.low || 1};background:${SIAGA1};"></div>
+        <div style="flex:${reliablePct || 1};background:${SAFE};"></div>
+        <div style="flex:${confPct.low || 1};background:${WARN};"></div>
       </div>
       <div class="tm-legend">
-        <span><span class="tm-dot" style="background:${SAFE};"></span>Terverifikasi tinggi ${confPct.high}%</span>
-        <span><span class="tm-dot" style="background:${WARN};"></span>Perlu dicek ${confPct.nominal}%</span>
-        <span><span class="tm-dot" style="background:${SIAGA1};"></span>Berisiko salah ${confPct.low}%</span>
+        <span><span class="tm-dot" style="background:${SAFE};"></span>Layak dipercaya ${reliablePct}%</span>
+        <span><span class="tm-dot" style="background:${WARN};"></span>Perlu dicek ulang ${confPct.low}%</span>
       </div>
-      <p class="nas-hint" style="margin:16px 0 0;">Kalau lagi buru-buru, cukup fokus ke titik berlabel "terverifikasi tinggi" dulu — potensi salah alarmnya paling kecil.</p>`;
+      <p class="nas-hint" style="margin:16px 0 0;">Rincian dari yang "layak dipercaya": ${confPct.nominal}% kategori <b>standar</b> dan ${confPct.high}% kategori <b>sangat yakin</b> — dua-duanya sama-sama valid. "Standar" itu memang kategori paling umum dari sensor satelit VIIRS, bukan tanda kurang meyakinkan.</p>
+      <p class="nas-hint" style="margin:8px 0 0;">Kalau lagi buru-buru, cukup lihat angka besar di atas — itu sudah gabungan titik yang layak dipercaya.</p>`;
   }
 
   const dn = nat.daynight || {};
@@ -1297,7 +1297,7 @@ function renderNational(data) {
   if (summaryEl && r1) {
     const dnLabel = dayPct >= nightPct ? "siang hari" : "malam hari";
     summaryEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
-      <p>Dalam 30 hari terakhir, <strong>${r1.region}</strong> jadi wilayah paling banyak titik panas (${pct(r1.count)}% dari nasional). Kebanyakan terdeteksi <strong>${dnLabel}</strong>, dan <strong>${confPct.high}% datanya sudah terverifikasi tinggi</strong> jadi bisa cukup dipercaya.</p>`;
+      <p>Dalam 30 hari terakhir, <strong>${r1.region}</strong> jadi wilayah paling banyak titik panas (${pct(r1.count)}% dari nasional). Kebanyakan terdeteksi <strong>${dnLabel}</strong>, dan <strong>${reliablePct}% datanya layak dipercaya</strong> jadi bisa cukup diandalkan.</p>`;
   }
 }
 
