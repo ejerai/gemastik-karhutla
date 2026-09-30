@@ -2,17 +2,6 @@
 
 Karhutla EWS adalah dashboard peringatan dini kebakaran hutan dan lahan (karhutla) www.karhutla.site untuk seluruh wilayah Indonesia. Website ini menampilkan titik panas (hotspot) kebakaran secara real-time di atas peta, lengkap dengan prediksi risiko kebakaran untuk beberapa hari ke depan menggunakan model machine learning.
 
-## Daftar Isi
-
-1. [Cara Kerja Sistem Secara Umum](#cara-kerja-sistem-secara-umum)
-2. [Sumber Data: NASA FIRMS](#sumber-data-nasa-firms)
-3. [Model Prediksi: XGBoost](#model-prediksi-xgboost)
-4. [Peta Dasar: CARTO](#peta-dasar-carto)
-5. [Bot Update Otomatis (GitHub Actions)](#bot-update-otomatis-github-actions)
-6. [Kenapa Data di Website Ini Akurat dan Real-Time](#kenapa-data-di-website-ini-akurat-dan-real-time)
-7. [File Data yang Sering Disebut "database.json"](#file-data-yang-sering-disebut-databasejson)
-8. [Cara Menjalankan Proyek Ini](#cara-menjalankan-proyek-ini)
-
 ## Guide
 
 Website ini dibangun dengan Astro (situs statis) dan tidak punya database aktif seperti MySQL atau MongoDB. Semua data yang tampil di dashboard sebenarnya disimpan dalam satu file JSON, yaitu `public/dashboard_data.json`. File ini yang dibaca oleh halaman web untuk menampilkan peta, grafik, dan angka-angka risiko kebakaran.
